@@ -15,12 +15,15 @@ struct RouteSheet: View {
     private var size: CGSize {
         switch route {
         case .configure(let pid, _):
-            let product = store.catalogue.product(pid)
-            let groups = product?.groups.count ?? 0
-            let options = product?.groups.reduce(0) { $0 + min($1.modifiers.count, 8) } ?? 0
-            if groups <= 2 { return CGSize(width: 660, height: 520) }
-            if groups <= 4 && options <= 18 { return CGSize(width: 860, height: 680) }
-            return CGSize(width: 1080, height: 872)
+            // The sheet is the size of what is on it, never more.
+            guard let product = store.catalogue.product(pid) else {
+                return CGSize(width: 660, height: 520)
+            }
+            let twoColumns = product.groups.count > 2
+            let width: CGFloat = twoColumns ? (product.groups.count > 4 ? 1000 : 900) : 660
+            let content = ConfigureSheet.contentHeight(for: product, twoColumns: twoColumns)
+            let height = min(872, max(430, content + 150))
+            return CGSize(width: width, height: height)
         case .combo, .portions: return CGSize(width: 960, height: 720)
         case .payment: return CGSize(width: 1000, height: 862)
         case .split: return CGSize(width: 1020, height: 840)

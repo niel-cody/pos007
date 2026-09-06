@@ -9,6 +9,11 @@ It is built from the `rams_pos` research: the Canonical Model's state machine, t
 catalogue's happy paths and edge cases, the venue profiles' configurations, and the
 accessibility baseline's floors for touch targets, contrast and timing.
 
+![The café configuration sheet](screenshots/01-cafe-configuration.png)
+
+*Every axis of an Australian coffee order on one sheet, with a running price. On a legacy till
+this is twenty-four taps across eleven screens.*
+
 ## Run it
 
 ```bash
@@ -73,6 +78,25 @@ Scripts include `cafe-configure`, `cafe-cart`, `cafe-queue`, `qsr-combo`, `qsr-k
 `bar-tabs`, `bar-round-build`, `bar-age`, `pub-cart`, `fs-floor`, `fs-split`, `fs-split-items`,
 `fd-courses`, `pizza-half`, `pizza-half-built`, `takeaway-inbox`, `printer-down`, `lock`,
 `approval`, `modes`, `help`. They are listed in `Rams/Store/Store+Demo.swift`.
+
+## Screens
+
+| | |
+|---|---|
+| ![Cart](screenshots/02-cafe-cart.png) | ![Queue](screenshots/03-cafe-queue.png) |
+| The cart, with the name row above the tenders | The make queue: two timers a card, only the modifiers that change the make |
+| ![Bar round](screenshots/04-bar-round.png) | ![Tabs](screenshots/05-bar-tabs.png) |
+| Four schooners and two wines in four taps, grouped as a round | Tabs, with Same again on every one and a card hold running out |
+| ![Floor](screenshots/07-full-service-floor.png) | ![Split](screenshots/08-split-by-item.png) |
+| Sixteen table states, each a word and a glyph, and a legend that filters | Split by item, mixable with the other four bases |
+| ![Courses](screenshots/06-pub-courses.png) | ![Seats](screenshots/09-fine-dining-seats.png) |
+| Drinks poured now, food to the kitchen, on one order | Seats, pacing, and an allergy that reaches the ticket |
+| ![Pizza](screenshots/10-pizza-halves.png) | ![Combo](screenshots/11-qsr-combo-sheet.png) |
+| Half-and-half with the pricing rule in words | The combo, with swap prices on the tiles that cost more |
+| ![Kitchen](screenshots/12-kitchen-board.png) | ![Inbox](screenshots/13-takeaway-inbox.png) |
+| Four stations, allergens, rush, and bump meaning Ready | Three aggregators, prep time, and Accept all |
+| ![Business type](screenshots/14-business-type.png) | ![Lock](screenshots/15-order-lock.png) |
+| The switcher: one chip, ⌘K, and it says what changes | Another till is paying. You can still add and send. |
 
 ## The mental model
 

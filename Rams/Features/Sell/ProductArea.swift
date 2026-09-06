@@ -11,7 +11,7 @@ struct ProductArea: View {
                     if store.profile.recentsEnabled && !store.recents.isEmpty {
                         recentsStrip
                     }
-                    if store.profile.roundsEnabled, let o = store.currentOrder, !o.rounds.isEmpty {
+                    if store.grouping == .rounds, let o = store.currentOrder, !o.rounds.isEmpty {
                         repeatRoundStrip(o)
                     }
                 }

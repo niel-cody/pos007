@@ -24,7 +24,11 @@ struct OrdersSurface: View {
     private var rows: [Order] {
         let base: [Order]
         switch filter {
-        case .live: base = store.liveOrders.filter { $0.status != .held }
+        case .live:
+            // An order still awaiting acceptance belongs in the inbox, not the order list.
+            base = store.liveOrders.filter {
+                $0.status != .held && !($0.status == .placed && $0.channel != .pos)
+            }
         case .parked: base = store.orders.filter { $0.status == .held }
         case .closed: base = store.completedOrders
         }
@@ -39,6 +43,17 @@ struct OrdersSurface: View {
     }
 
     var body: some View {
+        content
+            .onAppear {
+                // Open on the tab that has something in it.
+                if rows.isEmpty {
+                    if !store.orders.filter({ $0.status == .held }).isEmpty { filter = .parked }
+                    else if !store.completedOrders.isEmpty { filter = .closed }
+                }
+            }
+    }
+
+    private var content: some View {
         HStack(spacing: 0) {
             VStack(spacing: 0) {
                 header
@@ -99,7 +114,7 @@ struct OrdersSurface: View {
 
     private func count(_ f: Filter) -> String {
         switch f {
-        case .live: "\(store.liveOrders.filter { $0.status != .held }.count)"
+        case .live: "\(store.liveOrders.filter { $0.status != .held && !($0.status == .placed && $0.channel != .pos) }.count)"
         case .parked: "\(store.orders.filter { $0.status == .held }.count)"
         case .closed: "\(store.completedOrders.count)"
         }
@@ -181,7 +196,7 @@ struct OrderRow: View {
         if let d = order.dueAt { parts.append("for \(d.hhmm)") }
         if let closed = order.closedAt { parts.append("closed \(closed.hhmm)") }
         else { parts.append(order.updatedAt.elapsedShort) }
-        parts.append(order.openedBy)
+        if !order.openedBy.isEmpty { parts.append(order.openedBy) }
         return parts.joined(separator: " · ")
     }
 
@@ -191,12 +206,24 @@ struct OrderRow: View {
             case .live:
                 SecondaryAction(title: "Open", glyph: "chevron.right") { store.openOrder(order.id) }
                     .frame(width: 110)
-                PrimaryAction(title: "Pay", glyph: "creditcard.fill") {
-                    store.openOrder(order.id)
-                    store.takeLock(order.id)
-                    store.route = .payment
+                if order.amountDue.cents > 1 {
+                    PrimaryAction(title: "Pay", glyph: "creditcard.fill") {
+                        store.openOrder(order.id)
+                        store.takeLock(order.id)
+                        store.route = .payment
+                    }
+                    .frame(width: 130)
+                } else if order.derivedFulfilment == .ready {
+                    PrimaryAction(title: "Hand over", glyph: "hand.raised.fill", tint: Palette.go) {
+                        store.handOver(order.id)
+                    }
+                    .frame(width: 160)
+                } else if order.type.tracksFulfilment {
+                    PrimaryAction(title: "Ready", glyph: "bell.fill", tint: Palette.warn) {
+                        store.markOrderReady(order.id)
+                    }
+                    .frame(width: 130)
                 }
-                .frame(width: 130)
             case .parked:
                 PrimaryAction(title: "Recall", glyph: "arrow.up.circle.fill") {
                     store.recallOrder(order.id)
@@ -207,12 +234,14 @@ struct OrderRow: View {
                     store.toast(.done, "Receipt reprinted", detail: order.identifierLabel)
                 }
                 .frame(width: 120)
-                PrimaryAction(title: "Refund", glyph: "arrow.uturn.left",
-                              tint: Palette.stop,
-                              enabled: !order.isRefund && order.status != .refunded) {
+                // A refund is low frequency and high consequence, so it is deliberate rather
+                // than the loudest thing on the row.
+                SecondaryAction(title: "Refund", glyph: "arrow.uturn.left",
+                                tint: Palette.stop,
+                                enabled: !order.isRefund && order.status != .refunded) {
                     store.route = .refund(orderID: order.id)
                 }
-                .frame(width: 130)
+                .frame(width: 140)
             }
             Menu {
                 Button { store.route = .timeline(orderID: order.id) } label: {

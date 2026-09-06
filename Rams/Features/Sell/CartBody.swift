@@ -10,6 +10,13 @@ struct CartBody: View {
     @State private var collapseSent = true
 
     var body: some View {
+        VStack(spacing: 0) {
+            if order.hasAttention { attentionBanner }
+            scroller
+        }
+    }
+
+    private var scroller: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 switch store.grouping {
@@ -26,11 +33,6 @@ struct CartBody: View {
             .padding(.vertical, 12)
         }
         .frame(maxHeight: .infinity)
-        .overlay(alignment: .top) {
-            if order.hasAttention {
-                attentionBanner
-            }
-        }
     }
 
     // MARK: - Courses
@@ -225,7 +227,10 @@ struct CourseBlock: View {
     var items: [OrderItem]
 
     private var held: Bool { items.contains { $0.status == .held } }
-    private var allServed: Bool { !items.isEmpty && items.filter(\.isSentOrLater).allSatisfy(\.isServed) }
+    private var allServed: Bool {
+        let sent = items.filter(\.isSentOrLater)
+        return !sent.isEmpty && sent.allSatisfy(\.isServed)
+    }
     private var active: Bool { store.courseFilterID == course.id }
 
     var body: some View {

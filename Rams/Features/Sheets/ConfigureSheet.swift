@@ -53,13 +53,54 @@ struct ConfigureSheet: View {
         if let a = product.allergens.first.map({ _ in product.allergens.joined(separator: ", ") }) {
             parts.append("Contains \(a)")
         }
-        let required = product.groups.filter(\.isRequired).count
-        if required > 0 { parts.append("\(required) required choice\(required == 1 ? "" : "s")") }
+        let unanswered = product.groups.filter { group in
+            group.isRequired && group.modifiers.filter(\.isDefault).count < group.min
+        }.count
+        if unanswered > 0 {
+            parts.append("\(unanswered) choice\(unanswered == 1 ? "" : "s") to make")
+        }
         parts.append(product.station)
         return parts.joined(separator: " · ")
     }
 
-    /// Groups are dealt into two columns by weight, biggest first, so neither column runs long.
+    /// Groups are dealt into two columns by weight, so neither column runs long. The same
+    /// split decides how tall the sheet needs to be.
+    static func deal(_ groups: [ModifierGroup], twoColumns: Bool) -> ([ModifierGroup], [ModifierGroup]) {
+        guard twoColumns else { return (groups, []) }
+        var left: [ModifierGroup] = []
+        var right: [ModifierGroup] = []
+        var leftWeight = 0
+        var rightWeight = 0
+        for group in groups {
+            let weight = 1 + (min(group.modifiers.count, 8) + 1) / 2
+            if leftWeight <= rightWeight { left.append(group); leftWeight += weight }
+            else { right.append(group); rightWeight += weight }
+        }
+        return (left, right)
+    }
+
+    /// Rows of tiles plus a header per group, in points, for the taller column.
+    static func contentHeight(for product: Product, twoColumns: Bool) -> CGFloat {
+        let (left, right) = deal(product.groups, twoColumns: twoColumns)
+        func height(_ groups: [ModifierGroup]) -> CGFloat {
+            groups.reduce(CGFloat(0)) { total, group in
+                let perRow = twoColumns ? 2 : 4
+                let shown = group.needsSearch
+                    ? max(2, group.modifiers.filter(\.pinned).count)
+                    : group.modifiers.count
+                let rows = CGFloat((shown + perRow - 1) / perRow)
+                return total + 24 + rows * 50 + 13
+            }
+        }
+        // The note block sits at the foot of the right column in two-column layouts.
+        let note: CGFloat = 108
+        let tallest = twoColumns
+            ? max(height(left), height(right) + note)
+            : height(left) + note
+        let variants: CGFloat = product.variants.isEmpty ? 0 : 80
+        return variants + tallest + 40
+    }
+
     private var columns: ([ModifierGroup], [ModifierGroup]) {
         guard product.groups.count > 2 else { return (product.groups, []) }
         var left: [ModifierGroup] = []
