@@ -17,20 +17,20 @@ this is twenty-four taps across eleven screens.*
 ## Run it
 
 ```bash
-./build.sh
+git clone https://github.com/niel-cody/pos007.git
+cd pos007
+./run.sh
 ```
 
-Then install and launch on a booted iPad simulator:
+`run.sh` builds it, finds an iPad simulator, installs and launches. Rotate the simulator to
+landscape with ⌘←: the app is landscape-only, because a till is.
 
-```bash
-xcrun simctl boot "iPad Pro 13-inch (M5)"; open -a Simulator
-xcrun simctl install "iPad Pro 13-inch (M5)" .build/Build/Products/Debug-iphonesimulator/Rams.app
-xcrun simctl launch "iPad Pro 13-inch (M5)" com.oolio.rams
-```
+To open it on a particular moment, pass a demo script: `./run.sh fs-split`.
 
-Rotate the simulator to landscape (⌘←). The app is landscape-only, because a till is.
+Or open `Rams.xcodeproj` in Xcode, pick an iPad simulator, and press ⌘R.
 
-Requires Xcode 26 and the iOS 26 SDK. No dependencies, no network, no accounts.
+Requires Xcode 26 and the iOS 26 SDK, because the chrome uses Liquid Glass. No dependencies,
+no network, no accounts, no signing.
 
 ## The eight venues
 
