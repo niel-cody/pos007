@@ -11,6 +11,8 @@ struct SeedBundle {
     var recents: [OrderItem] = []
     var shift: Shift = Shift()
     var hour: Int = 12
+    var recentNames: [String] = ["Sam", "Alex", "Priya", "Josh", "Marcus", "Sarah",
+                                 "Tom", "Ana", "Kiri", "Dan"]
 }
 
 // MARK: - Authoring helpers

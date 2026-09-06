@@ -30,6 +30,12 @@ struct RootView: View {
                     .transition(.opacity)
             }
         }
+        .overlay {
+            if store.pendingConfirm != nil {
+                ConfirmOverlay()
+                    .transition(.opacity)
+            }
+        }
         .overlay(alignment: .topTrailing) {
             if showDemoPanel {
                 DemoPanel(isOpen: $showDemoPanel)
@@ -39,6 +45,10 @@ struct RootView: View {
             }
         }
         .animation(Motion.panel, value: store.route)
+        .animation(Motion.quick, value: store.pendingConfirm)
+        // Visual confirmation is the primary signal; the haptic is the second one, because a
+        // venue is loud and audio cannot be relied on. (W21.11)
+        .sensoryFeedback(.success, trigger: store.feedbackTick)
         .animation(Motion.panel, value: showDemoPanel)
         .sheet(item: sheetBinding) { route in
             RouteSheet(route: route)

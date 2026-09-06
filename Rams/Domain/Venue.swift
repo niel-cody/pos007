@@ -197,6 +197,10 @@ struct VenueProfile: Codable {
     var largeQuantityThreshold: Int
     var wetEnvironment: Bool
     var darkPreferred: Bool
+    /// Whether a tap opens the configuration sheet. Where modifiers are the interface (a café,
+    /// a pizza shop) it must. At a bar, where the sizes have defaults and the queue is ten
+    /// deep, a tap adds the default and the sheet is one long press away.
+    var tapConfigures: Bool
 
     // Payment
     var quickTenders: [TenderKind]
@@ -267,6 +271,7 @@ extension VenueProfile {
             largeQuantityThreshold: 24,
             wetEnvironment: false,
             darkPreferred: false,
+            tapConfigures: true,
             quickTenders: [.cash, .card],
             allTenders: [.cash, .card, .giftCard, .voucher, .houseAccount, .other],
             maxSplitPayments: 4,
@@ -355,6 +360,7 @@ extension VenueProfile {
             p.largeQuantityThreshold = 12
             p.wetEnvironment = true
             p.darkPreferred = true
+            p.tapConfigures = false
             p.quickTenders = [.card, .cash]
             p.quickPaymentMode = true
             p.tipsEnabled = true

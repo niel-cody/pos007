@@ -189,10 +189,20 @@ struct ProductTile: View {
                                 .fill(tint.opacity(theme.dark ? 0.26 : 0.14))
                         }
                     Spacer(minLength: 0)
-                    if product.requiresChoice {
-                        Image(systemName: "slider.horizontal.3")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(theme.inkSecondary.opacity(0.6))
+                    if product.hasChoices {
+                        Button {
+                            store.route = .configure(productID: product.id, editing: nil)
+                        } label: {
+                            Image(systemName: "slider.horizontal.3")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(product.requiresChoice
+                                                 ? theme.accent
+                                                 : theme.inkSecondary.opacity(0.65))
+                                .frame(width: 26, height: 22)
+                                .contentShape(.rect)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Configure \(product.name)")
                     }
                     if product.ageRestricted {
                         Text("18+")

@@ -118,7 +118,9 @@ enum PubSeed {
             Product(name: "Lemon Lime Bitters", price: Money(5.50), categoryID: wines.id, station: "Bar",
                     glyph: "cup.and.straw", accent: 4, isDrink: true, courseHint: "Drinks"),
             Product(name: "Coffee", price: Money(4.50), categoryID: wines.id, station: "Bar",
-                    glyph: "cup.and.saucer.fill", accent: 1, isDrink: true, courseHint: "Drinks")
+                    glyph: "cup.and.saucer.fill", accent: 1, isDrink: true, courseHint: "Drinks"),
+            Product(name: "Function deposit", price: .zero, categoryID: wines.id, station: "Bar",
+                    glyph: "square.dashed", accent: 5, openPriced: true, courseHint: "Drinks")
         ]
 
         let sticky = Product(name: "Sticky Date Pudding", price: Money(14.00), categoryID: desserts.id,

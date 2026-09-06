@@ -84,6 +84,20 @@ extension POSStore {
                 if let round = order(tab.id)?.rounds.first { repeatRound(round.id) }
             }
 
+        case "bar-round-build":
+            switchMode(.bar)
+            keypadPrefix = "4"
+            if let ale = catalogue.product(named: "Pale Ale") { tapProduct(ale) }
+            if let confirm = pendingConfirm { _ = confirm; resolveConfirm(true) }
+            keypadPrefix = "2"
+            if let red = catalogue.product(named: "House Rosé") { tapProduct(red) }
+
+        case "bar-age":
+            switchMode(.bar)
+            if let ale = catalogue.product(named: "Pale Ale") {
+                tapProduct(ale)
+            }
+
         case "bar-open-tab":
             switchMode(.bar)
             route = .openTab
@@ -198,7 +212,7 @@ extension POSStore {
     }
 
     private func buildCafeOrder() {
-        _ = newOrder(type: .takeaway, name: "Sam")
+        _ = newOrder(type: .takeaway)
         guard let latte = catalogue.product(named: "Latte") else { return }
         var mods: [SelectedModifier] = []
         for group in latte.groups {
@@ -227,9 +241,6 @@ extension POSStore {
         }
         if let roll = catalogue.product(named: "Bacon & Egg Roll") {
             add(product: roll, modifiers: defaultModifiers(for: roll), note: "no sauce")
-        }
-        if let sam = customers.first(where: { $0.name.hasPrefix("Sam") }), let id = currentOrderID {
-            attach(customer: sam, to: id)
         }
         upsell = nil
     }

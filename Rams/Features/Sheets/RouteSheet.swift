@@ -14,22 +14,28 @@ struct RouteSheet: View {
 
     private var size: CGSize {
         switch route {
-        case .configure: CGSize(width: 1080, height: 872)
-        case .combo, .portions: CGSize(width: 960, height: 720)
-        case .payment: CGSize(width: 1000, height: 862)
-        case .split: CGSize(width: 1020, height: 840)
-        case .orderDetails, .customers: CGSize(width: 760, height: 780)
-        case .refund: CGSize(width: 820, height: 800)
-        case .timeline: CGSize(width: 640, height: 760)
-        case .tableSheet: CGSize(width: 620, height: 780)
-        case .help: CGSize(width: 760, height: 720)
-        case .transfer: CGSize(width: 700, height: 760)
-        case .courses: CGSize(width: 620, height: 720)
-        case .discountItem, .discountOrder: CGSize(width: 680, height: 800)
-        case .voidItem: CGSize(width: 560, height: 700)
-        case .openTab: CGSize(width: 620, height: 700)
-        case .shiftClose: CGSize(width: 820, height: 780)
-        default: CGSize(width: 520, height: 640)
+        case .configure(let pid, _):
+            let product = store.catalogue.product(pid)
+            let groups = product?.groups.count ?? 0
+            let options = product?.groups.reduce(0) { $0 + min($1.modifiers.count, 8) } ?? 0
+            if groups <= 2 { return CGSize(width: 660, height: 520) }
+            if groups <= 4 && options <= 18 { return CGSize(width: 860, height: 680) }
+            return CGSize(width: 1080, height: 872)
+        case .combo, .portions: return CGSize(width: 960, height: 720)
+        case .payment: return CGSize(width: 1000, height: 862)
+        case .split: return CGSize(width: 1020, height: 840)
+        case .orderDetails, .customers: return CGSize(width: 760, height: 780)
+        case .refund: return CGSize(width: 820, height: 800)
+        case .timeline: return CGSize(width: 640, height: 760)
+        case .tableSheet: return CGSize(width: 620, height: 780)
+        case .help: return CGSize(width: 760, height: 720)
+        case .transfer: return CGSize(width: 700, height: 760)
+        case .courses: return CGSize(width: 620, height: 720)
+        case .discountItem, .discountOrder: return CGSize(width: 680, height: 800)
+        case .voidItem: return CGSize(width: 560, height: 700)
+        case .openTab: return CGSize(width: 620, height: 700)
+        case .shiftClose: return CGSize(width: 820, height: 780)
+        default: return CGSize(width: 520, height: 640)
         }
     }
 

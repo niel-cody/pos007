@@ -312,6 +312,7 @@ struct Order: Identifiable, Hashable, Codable {
     var prepMinutes: Int?
     var partnerReference: String?
     var calledAt: Date?
+    var ageChecked: Bool = false
 
     // MARK: derived
 

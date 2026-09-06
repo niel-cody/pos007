@@ -273,6 +273,23 @@ extension POSStore {
         toast(.done, "Split \(take) off", detail: "Modify the new line on its own")
     }
 
+    /// Name the order from the recent row, disambiguating when two guests share a first name.
+    func setName(_ name: String) {
+        let unique = disambiguate(name)
+        let o = ensureOrder()
+        update(o.id) {
+            $0.name = unique
+            if $0.customerName == nil { $0.customerName = unique }
+        }
+        recentNames.removeAll { $0 == name }
+        recentNames.insert(name, at: 0)
+        if recentNames.count > 12 { recentNames.removeLast() }
+        if unique != name {
+            toast(.info, "There is already a \(name)",
+                  detail: "Named this one \(unique) so nobody gets the wrong order")
+        }
+    }
+
     // MARK: - Recents and repeats
 
     private func rememberRecent(_ item: OrderItem) {

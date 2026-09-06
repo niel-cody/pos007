@@ -170,7 +170,9 @@ enum CafeSeed {
                     variants: Seed.variants([("House", 0, true), ("Single origin", 6.00, false), ("Decaf", 2.00, false)]),
                     barcode: "9312345678900"),
             Product(name: "Keep Cup", price: Money(28.00), categoryID: retail.id, station: "Coffee",
-                    glyph: "cup.and.saucer.fill", accent: 9, barcode: "9312345678917")
+                    glyph: "cup.and.saucer.fill", accent: 9, barcode: "9312345678917"),
+            Product(name: "Miscellaneous", price: .zero, categoryID: retail.id, station: "Coffee",
+                    glyph: "square.dashed", accent: 5, openPriced: true)
         ]
 
         // The 3pm pastry promotion the research describes, plus a member's discount.

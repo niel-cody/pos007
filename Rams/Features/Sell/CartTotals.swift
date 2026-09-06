@@ -67,6 +67,11 @@ struct CartActions: View {
 
     var body: some View {
         VStack(spacing: 8) {
+            if store.profile.identifier == .customerName,
+               (order.name ?? "").isEmpty, !order.liveItems.isEmpty {
+                NameStrip(order: order)
+                    .padding(.bottom, 2)
+            }
             if store.profile.coursesEnabled || store.profile.kdsEnabled || !store.profile.stations.isEmpty {
                 HStack(spacing: 8) {
                     PrimaryAction(title: sendable > 0 ? "Send \(sendable)" : "Sent",
@@ -166,6 +171,52 @@ struct CartActions: View {
             store.route = .payment
         default:
             store.tender(kind, amount: order.amountDue)
+        }
+    }
+}
+
+/// The name row. Forty names recur every morning, so typing one is a waste of five taps.
+/// It shows only while the order has no identifier and the venue calls orders by name.
+struct NameStrip: View {
+    @Environment(POSStore.self) private var store
+    @Environment(\.theme) private var theme
+    var order: Order
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            PanelHeader("Name on the cup", detail: "or open details to type one")
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(store.recentNames.prefix(8), id: \.self) { name in
+                        Button {
+                            store.setName(name)
+                        } label: {
+                            Text(name)
+                                .font(.system(size: 15, weight: .semibold))
+                                .padding(.horizontal, 15)
+                                .frame(height: 42)
+                                .foregroundStyle(theme.ink)
+                                .background(Capsule().fill(theme.accentSoft))
+                        }
+                        .posPress()
+                    }
+                    Button {
+                        store.route = .orderDetails
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "keyboard").font(.system(size: 13, weight: .semibold))
+                            Text("Type").font(.system(size: 14, weight: .medium))
+                        }
+                        .padding(.horizontal, 13)
+                        .frame(height: 42)
+                        .foregroundStyle(theme.inkSecondary)
+                        .background {
+                            Capsule().strokeBorder(theme.hairline, lineWidth: 1)
+                        }
+                    }
+                    .posPress()
+                }
+            }
         }
     }
 }

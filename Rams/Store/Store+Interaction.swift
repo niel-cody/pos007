@@ -8,6 +8,23 @@ extension POSStore {
         let qty = Int(keypadPrefix) ?? 1
         keypadPrefix = ""
 
+        // Age-restricted stock is confirmed once per order: asking on every round is how a
+        // confirmation stops being read.
+        if product.ageRestricted, !(currentOrder?.ageChecked ?? false) {
+            let o = ensureOrder()
+            confirm(ConfirmRequest(title: "Check ID",
+                                   message: "\(product.name) is age restricted. Confirm the guest is over 18 — this is recorded against the order.",
+                                   confirmTitle: "Over 18, add it",
+                                   glyph: "person.badge.shield.checkmark.fill")) { [weak self] in
+                guard let self else { return }
+                self.update(o.id) { $0.ageChecked = true }
+                self.log(o.id, "ID checked for age-restricted sale", glyph: "person.badge.shield.checkmark.fill")
+                self.keypadPrefix = String(qty == 1 ? "" : "\(qty)")
+                self.tapProduct(product, skipUpsell: skipUpsell)
+            }
+            return
+        }
+
         guard product.isAvailable else {
             // Sold out is a choice, not a wall: add anyway, or pick something else.
             toast(.warn, "\(product.name) is sold out",
@@ -25,11 +42,16 @@ extension POSStore {
             route = .openPrice(productID: product.id)
             return
         }
-        if product.hasChoices {
+        // A required choice always opens the sheet. An optional one opens it only where the
+        // venue's modifiers are the interface.
+        if product.requiresChoice || (product.hasChoices && profile.tapConfigures) {
             route = .configure(productID: product.id, editing: nil)
             return
         }
-        add(product: product, modifiers: defaultModifiers(for: product), quantity: qty)
+        add(product: product,
+            variant: product.variants.first(where: \.isDefault) ?? product.variants.first,
+            modifiers: defaultModifiers(for: product),
+            quantity: qty)
         if !skipUpsell { offerUpsell(for: product) }
     }
 
@@ -38,7 +60,10 @@ extension POSStore {
     func longPressProduct(_ product: Product) {
         let qty = Int(keypadPrefix) ?? 1
         keypadPrefix = ""
-        add(product: product, modifiers: defaultModifiers(for: product), quantity: qty)
+        add(product: product,
+            variant: product.variants.first(where: \.isDefault) ?? product.variants.first,
+            modifiers: defaultModifiers(for: product),
+            quantity: qty)
         if !product.isAvailable {
             toast(.warn, "Added \(product.name) while sold out", detail: "Tell the kitchen")
         }

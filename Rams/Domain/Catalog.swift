@@ -147,7 +147,12 @@ struct Product: Identifiable, Hashable, Codable {
 
     var displayName: String { kitchenName ?? name }
     var hasChoices: Bool { !variants.isEmpty || !groups.isEmpty || comboID != nil }
-    var requiresChoice: Bool { groups.contains(where: \.isRequired) || comboID != nil }
+    var requiresChoice: Bool {
+        if comboID != nil { return true }
+        return groups.contains { group in
+            group.isRequired && group.modifiers.filter(\.isDefault).count < group.min
+        }
+    }
     var isAvailable: Bool { !soldOut && (trackedQuantity ?? 1) > 0 }
 }
 

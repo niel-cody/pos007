@@ -75,6 +75,17 @@ struct ApprovalRequest: Identifiable, Equatable {
     var reasons: [String] = []
 }
 
+/// A deliberate confirmation. Routine low-risk actions never get one; an age-restricted sale
+/// and a delivery outside the zone do. (Error prevention over error recovery)
+struct ConfirmRequest: Identifiable, Equatable {
+    var id = UUID()
+    var title: String
+    var message: String
+    var confirmTitle: String
+    var glyph: String = "exclamationmark.triangle.fill"
+    var destructive: Bool = false
+}
+
 struct Shift {
     var openedAt: Date = .now
     var float: Money = Money(300)
@@ -127,8 +138,15 @@ final class POSStore {
     var selectedCategoryID: UUID?
     var keypadPrefix: String = ""
     var recents: [OrderItem] = []
+    /// The forty names that recur every morning. One tap beats a keyboard and a confirm. (W01.16)
+    var recentNames: [String] = []
     var pendingApproval: ApprovalRequest?
     var approvalContinuation: ((Staff, String?) -> Void)?
+    var pendingConfirm: ConfirmRequest?
+    var confirmContinuation: (() -> Void)?
+    /// Bumped on every confirmation so the device can answer with a haptic as well as a
+    /// visual change. A noisy room cannot rely on sound. (W21.11)
+    var feedbackTick: Int = 0
     var undoStack: [(order: Order, label: String)] = []
     var shift = Shift()
     var now: Date = .now
@@ -199,6 +217,7 @@ final class POSStore {
             stationDevices.append(StationDevice(name: "Labels", kind: .label))
         }
         recents = seed.recents
+        recentNames = seed.recentNames
         shift = seed.shift
         surface = profile.homeSurface
         selectedCategoryID = catalogue.categories.first?.id
@@ -280,6 +299,7 @@ final class POSStore {
     // Confirmation is a toast that leaves the work visible, never a modal that hides it.
 
     func toast(_ kind: Toast.Kind, _ text: String, detail: String? = nil, undo: String? = nil) {
+        feedbackTick += 1
         let t = Toast(kind: kind, text: text, detail: detail, undo: undo)
         toasts.append(t)
         Task { @MainActor in
@@ -330,6 +350,17 @@ final class POSStore {
     func clearApproval() {
         pendingApproval = nil
         approvalContinuation = nil
+    }
+
+    func confirm(_ request: ConfirmRequest, then action: @escaping () -> Void) {
+        pendingConfirm = request
+        confirmContinuation = action
+    }
+
+    func resolveConfirm(_ accepted: Bool) {
+        if accepted { confirmContinuation?() }
+        pendingConfirm = nil
+        confirmContinuation = nil
     }
 
     // MARK: - Undo
