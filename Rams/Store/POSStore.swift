@@ -99,6 +99,9 @@ struct Shift {
     var refunds: Money = .zero
     var covers: Int = 0
     var orders: Int = 0
+    /// Initials to what they took. Logging out after every sale is what makes this true.
+    var byOperator: [String: Money] = [:]
+    var ordersByOperator: [String: Int] = [:]
 
     var expectedCash: Money { float + cashSales + paidIn - paidOut - drops }
     var netSales: Money { cashSales + cardSales + otherSales }

@@ -237,6 +237,9 @@ struct CartLineRow: View {
         if !item.allergens.isEmpty, store.profile.allergensEnabled {
             out.append((item.allergens.joined(separator: ", "), "exclamationmark.shield.fill", Palette.stop, false))
         }
+        if !item.addedBy.isEmpty, item.addedBy != store.operatorStaff.initials {
+            out.append((item.addedBy, "person.fill", theme.inkSecondary, false))
+        }
         if item.source == "repeat_round" {
             out.append(("Repeat", "arrow.trianglehead.2.clockwise.rotate.90", theme.inkSecondary, false))
         }

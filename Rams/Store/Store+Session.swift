@@ -86,19 +86,14 @@ extension POSStore {
         }
     }
 
-    /// The operator is still serving, so the till stays theirs.
-    func stayOn() {
-        lockCountdown = 0
-        saleSummary = nil
-    }
-
     func logOutNow() {
         lockCountdown = 0
         saleSummary = nil
         lock(reason: "Logged out")
     }
 
-    func dismissSaleSummary() {
+    func finishSale(printReceipt: Bool) {
+        if printReceipt { toast(.done, "Receipt printed") }
         if saleSummary?.returnsToLock == true { logOutNow() } else { saleSummary = nil }
     }
 }

@@ -269,121 +269,103 @@ struct LockScreen: View {
     }
 }
 
-/// The few seconds after the money is taken: what was paid, what change to hand back, and a
-/// countdown that hands the till on without anybody having to remember to.
+/// The three seconds after the money is taken: what was paid, what change to hand back, and
+/// the receipt question. Then the till hands itself to whoever is next, because several people
+/// use this screen in an hour and every line has to carry a name.
 struct SaleCompleteScreen: View {
     @Environment(POSStore.self) private var store
     @Environment(\.theme) private var theme
     var summary: SaleSummary
 
+    @State private var ring: CGFloat = 1
+    @State private var appeared = false
+
     var body: some View {
         ZStack {
             Color.black.opacity(0.42).ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                VStack(spacing: 16) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 44, weight: .semibold))
+            VStack(spacing: 20) {
+                ZStack {
+                    Circle()
+                        .strokeBorder(theme.hairline, lineWidth: 4)
+                    Circle()
+                        .trim(from: 0, to: ring)
+                        .stroke(Palette.go, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 26, weight: .bold))
                         .foregroundStyle(Palette.go)
+                        .scaleEffect(appeared ? 1 : 0.4)
+                        .opacity(appeared ? 1 : 0)
+                }
+                .frame(width: 76, height: 76)
 
-                    VStack(spacing: 3) {
-                        Text("Paid \(summary.total.formatted())")
-                            .font(.system(size: 30, weight: .semibold, design: .rounded))
+                VStack(spacing: 4) {
+                    Text("Paid \(summary.total.formatted())")
+                        .font(.system(size: 30, weight: .semibold, design: .rounded))
+                        .moneyFigure()
+                        .foregroundStyle(theme.ink)
+                    Text("\(summary.orderLabel) · \(summary.itemCount) items · \(summary.operatorName)")
+                        .font(.system(size: 13.5))
+                        .foregroundStyle(theme.inkSecondary)
+                }
+
+                if summary.change.cents > 0 {
+                    VStack(spacing: 2) {
+                        Text("Change").sectionLabelStyle(theme.inkSecondary)
+                        Text(summary.change.formatted())
+                            .font(.changeDue)
                             .moneyFigure()
                             .foregroundStyle(theme.ink)
-                        Text("\(summary.orderLabel) · \(summary.itemCount) items · \(summary.operatorName)")
-                            .font(.system(size: 13.5))
-                            .foregroundStyle(theme.inkSecondary)
                     }
-
-                    if summary.change.cents > 0 {
-                        VStack(spacing: 2) {
-                            Text("Change")
-                                .sectionLabelStyle(theme.inkSecondary)
-                            Text(summary.change.formatted())
-                                .font(.changeDue)
-                                .moneyFigure()
-                                .foregroundStyle(theme.ink)
-                        }
-                        .padding(.horizontal, 30)
-                        .padding(.vertical, 14)
-                        .background {
-                            RoundedRectangle(cornerRadius: Metric.rTile, style: .continuous)
-                                .fill(Palette.go.opacity(theme.dark ? 0.24 : 0.12))
-                        }
+                    .padding(.horizontal, 34)
+                    .padding(.vertical, 14)
+                    .background {
+                        RoundedRectangle(cornerRadius: Metric.rTile, style: .continuous)
+                            .fill(Palette.go.opacity(theme.dark ? 0.24 : 0.12))
                     }
-
-                    if !summary.tenders.isEmpty {
-                        Text(summary.tenders.joined(separator: "  ·  "))
-                            .font(.system(size: 13))
-                            .foregroundStyle(theme.inkSecondary)
-                    }
-
-                    HStack(spacing: 8) {
-                        SecondaryAction(title: "Print receipt", glyph: "printer") {
-                            store.toast(.done, "Receipt printed")
-                        }
-                        SecondaryAction(title: "No receipt", glyph: "xmark") {
-                            store.dismissSaleSummary()
-                        }
-                    }
-                    .frame(maxWidth: 380)
                 }
-                .padding(.horizontal, 34)
-                .padding(.top, 34)
-                .padding(.bottom, 24)
 
-                if summary.returnsToLock {
-                    Divider().overlay(theme.hairline)
-                    HStack(spacing: 12) {
-                        ZStack {
-                            Circle()
-                                .strokeBorder(theme.hairline, lineWidth: 3)
-                            Circle()
-                                .trim(from: 0, to: progress)
-                                .stroke(theme.accent, style: StrokeStyle(lineWidth: 3, lineCap: .round))
-                                .rotationEffect(.degrees(-90))
-                            Text("\(store.lockCountdown)")
-                                .font(.system(size: 14, weight: .bold, design: .rounded))
-                                .foregroundStyle(theme.ink)
-                        }
-                        .frame(width: 38, height: 38)
-                        .animation(.linear(duration: 1), value: store.lockCountdown)
-
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text("Handing the till back")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(theme.ink)
-                            Text("\(summary.operatorName.firstWord) will be logged out so the next round is rung under the right name.")
-                                .font(.system(size: 12))
-                                .foregroundStyle(theme.inkSecondary)
-                        }
-                        Spacer(minLength: 8)
-                        SecondaryAction(title: "Stay on", glyph: "person.fill.checkmark") {
-                            store.stayOn()
-                        }
-                        .frame(width: 150)
-                        PrimaryAction(title: "Log out", glyph: "lock.fill") {
-                            store.logOutNow()
-                        }
-                        .frame(width: 160)
-                    }
-                    .padding(Metric.padLarge)
-                    .background(theme.raised)
+                if !summary.tenders.isEmpty {
+                    Text(summary.tenders.joined(separator: "  ·  "))
+                        .font(.system(size: 13))
+                        .foregroundStyle(theme.inkSecondary)
                 }
+
+                HStack(spacing: 10) {
+                    SecondaryAction(title: "Receipt", glyph: "printer") {
+                        store.finishSale(printReceipt: true)
+                    }
+                    PrimaryAction(title: "No receipt", glyph: "checkmark") {
+                        store.finishSale(printReceipt: false)
+                    }
+                }
+                .frame(maxWidth: 420)
+
+                Text(footnote)
+                    .font(.system(size: 12))
+                    .foregroundStyle(theme.inkSecondary.opacity(0.85))
             }
-            .frame(width: 620)
+            .padding(.horizontal, 40)
+            .padding(.vertical, 34)
+            .frame(width: 560)
             .background {
                 RoundedRectangle(cornerRadius: Metric.rPanel, style: .continuous)
                     .fill(theme.surface)
-                    .shadow(color: .black.opacity(0.3), radius: 40, y: 14)
+                    .shadow(color: .black.opacity(0.32), radius: 44, y: 16)
             }
-            .clipShape(RoundedRectangle(cornerRadius: Metric.rPanel, style: .continuous))
+            .scaleEffect(appeared ? 1 : 0.94)
+            .opacity(appeared ? 1 : 0)
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.78)) { appeared = true }
+            withAnimation(.linear(duration: Double(store.profile.lockGraceSeconds))) { ring = 0 }
         }
     }
 
-    private var progress: CGFloat {
-        let total = max(1, store.profile.lockGraceSeconds)
-        return CGFloat(store.lockCountdown) / CGFloat(total)
+    private var footnote: String {
+        guard summary.returnsToLock else { return "Tap to start the next order" }
+        let n = max(store.lockCountdown, 1)
+        return "Handing the till back in \(n)… \(summary.operatorName.firstWord) will be logged out"
     }
 }

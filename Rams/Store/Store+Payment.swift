@@ -177,6 +177,8 @@ extension POSStore {
         }
         shift.orders += 1
         shift.covers += o.guestCount ?? 0
+        shift.ordersByOperator[operatorStaff.initials] =
+            (shift.ordersByOperator[operatorStaff.initials] ?? 0) + 1
         log(orderID, "Order completed \(o.total.formatted())", glyph: "checkmark.seal.fill")
 
         if let tid = o.tableID {
@@ -201,6 +203,8 @@ extension POSStore {
         case .card, .manualCard: shift.cardSales = shift.cardSales + leg.amount + leg.surcharge
         default: shift.otherSales = shift.otherSales + leg.amount
         }
+        let who = leg.staff.isEmpty ? operatorStaff.initials : leg.staff
+        shift.byOperator[who] = (shift.byOperator[who] ?? .zero) + leg.amount
     }
 
     /// Zero balance: a fully discounted order still needs a deliberate close. (W08.13)

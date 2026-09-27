@@ -225,7 +225,9 @@ enum CafeSeed {
         bundle.shift = Shift(openedAt: .now.addingTimeInterval(-5400), float: Money(300),
                              cashSales: Money(184.40), cardSales: Money(1_226.80),
                              otherSales: Money(42.00), paidOut: Money(38.00),
-                             covers: 0, orders: 141)
+                             covers: 0, orders: 141,
+                             byOperator: ["NA": Money(812.40), "KM": Money(640.80)],
+                             ordersByOperator: ["NA": 79, "KM": 62])
 
         func latte(_ name: String, size: String, milkChoice: String, extras: [String] = [],
                    ago: TimeInterval, ready: Bool = false, product: String = "Latte") -> Order {

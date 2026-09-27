@@ -173,7 +173,10 @@ enum BarSeed {
         var bundle = SeedBundle(catalogue: cat, customers: [], staff: staff)
         bundle.hour = 20
         bundle.shift = Shift(openedAt: .now.addingTimeInterval(-14400), float: Money(500),
-                             cashSales: Money(1_140.50), cardSales: Money(4_820.00), orders: 312)
+                             cashSales: Money(1_140.50), cardSales: Money(4_820.00), orders: 312,
+                             byOperator: ["JR": Money(2_610.00), "EM": Money(2_330.50),
+                                          "CV": Money(1_020.00)],
+                             ordersByOperator: ["JR": 141, "EM": 128, "CV": 43])
 
         // Four tabs open, one on a card hold near its limit, two under the same first name.
         func tab(_ name: String, number: Int, rounds: [[(Product, Int, String?)]],

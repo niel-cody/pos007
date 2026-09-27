@@ -66,6 +66,38 @@ struct ShiftSurface: View {
                     }
                 }
 
+                if !store.shift.byOperator.isEmpty {
+                    Panel {
+                        VStack(alignment: .leading, spacing: 9) {
+                            PanelHeader("Who took what",
+                                        detail: "every sale is rung under the name that was logged in")
+                            ForEach(store.shift.byOperator.sorted { $0.value > $1.value }, id: \.key) { entry in
+                                let staff = store.staff.first { $0.initials == entry.key }
+                                HStack(spacing: 10) {
+                                    Text(entry.key)
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundStyle(.white)
+                                        .frame(width: 30, height: 30)
+                                        .background(Circle().fill(theme.inkSecondary))
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        Text(staff?.name ?? entry.key)
+                                            .font(.system(size: 14, weight: .medium))
+                                            .foregroundStyle(theme.ink)
+                                        Text("\(staff?.role.label ?? "Operator") · \(store.shift.ordersByOperator[entry.key] ?? 0) orders")
+                                            .font(.system(size: 11.5))
+                                            .foregroundStyle(theme.inkSecondary)
+                                    }
+                                    Spacer()
+                                    Text(entry.value.formatted())
+                                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                                        .moneyFigure()
+                                        .foregroundStyle(theme.ink)
+                                }
+                            }
+                        }
+                    }
+                }
+
                 Panel {
                     VStack(alignment: .leading, spacing: 9) {
                         PanelHeader("This device", detail: "\(store.profile.deviceName) · \(store.profile.venueName)")

@@ -230,9 +230,10 @@ struct VenueProfile: Codable {
     var queueBoardEnabled: Bool
 
     // Login
-    /// A shared till goes back to the lock screen when a sale ends, so the next round is rung
-    /// under the name of whoever poured it. The research warns this is fatal at peak in a
-    /// nightclub, which is why it is a device setting rather than a rule.
+    /// A till goes back to the lock screen when a sale ends. Several people use the same
+    /// screen in an hour, so every line, every void and every drawer opening has to carry the
+    /// name of whoever did it. The grace period is three seconds, which is long enough to
+    /// answer the receipt question and short enough not to hold a queue.
     var postSaleReturnsToLock: Bool
     /// How long the completed sale stays up before it locks. Long enough to read the change,
     /// short enough not to hold the queue.
@@ -302,8 +303,8 @@ extension VenueProfile {
             labelPrinting: false,
             mapsDrinksToNow: false,
             queueBoardEnabled: false,
-            postSaleReturnsToLock: false,
-            lockGraceSeconds: 6,
+            postSaleReturnsToLock: true,
+            lockGraceSeconds: 3,
             pinAboveOperator: true
         )
     }
@@ -369,8 +370,6 @@ extension VenueProfile {
             p.largeQuantityThreshold = 12
             p.wetEnvironment = true
             p.darkPreferred = true
-            p.postSaleReturnsToLock = true
-            p.lockGraceSeconds = 6
             p.quickTenders = [.card, .cash]
             p.quickPaymentMode = true
             p.tipsEnabled = true
@@ -394,8 +393,6 @@ extension VenueProfile {
             p.roundsEnabled = true
             p.memberPricing = true
             p.houseAccounts = true
-            p.postSaleReturnsToLock = true
-            p.lockGraceSeconds = 7
             p.grid = .standard
             p.quickTenders = [.cash, .card]
             p.stations = ["Grill", "Larder", "Bar"]

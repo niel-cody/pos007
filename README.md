@@ -60,8 +60,9 @@ The venue chip menu has a "What to try" item for whichever venue is open. In sho
   as bags to pack.
 - **Bar.** Tap Espresso Martini, then Grey Goose or Belvedere on the composer: the house pour
   is swapped out, the line reprices and the docket says which spirit. Type 4 on the keypad
-  and tap Pale Ale for a round of four with no sheet. Pay a tab in cash and watch the till
-  show the change and hand itself back to the lock screen.
+  and tap Pale Ale for a round of four with no sheet. Pay a tab in cash and watch the
+  three-second handover: the change, the receipt question, then back to the lock screen. The
+  Shift surface then shows what each bartender took.
 - **Full service.** The floor is the home screen. Table 4 has its mains held: open it and tap
   Fire on the Mains header. Table 2 asked for the bill: Split, Equal, 3, then re-split what
   is left when the guests change their minds.
@@ -110,7 +111,9 @@ Scripts include `cafe-roll`, `cafe-configure`, `cafe-cart`, `cafe-queue`, `qsr-c
 | ![Premium](screenshots/19-premium-swap.png) | ![Bundle](screenshots/20-cart-bundle.png) |
 | The house pour swapped for a premium vodka, repriced, on the docket | The same order as bags to pack |
 | ![Lock screen](screenshots/22-lock-screen.png) | ![Sale complete](screenshots/23-sale-complete.png) |
-| Three access tiers. Operators tap in, supervisors and managers use a PIN | The change, then the till hands itself back |
+| Three access tiers. Operators tap in, supervisors and managers use a PIN | Three seconds: the change, the receipt question, then the till hands itself back |
+| ![Who took what](screenshots/24-who-took-what.png) | ![Seats](screenshots/21-cart-seats.png) |
+| The reason everyone logs in: takings by operator, with order counts | The cart pivoted to seats for a bill that is about to be split |
 
 ## The mental model
 
@@ -139,11 +142,15 @@ the button changing to "Sending 4".
 **Approval comes to the operator.** A manager taps a PIN on the operator's own device, picks a
 reason, and the action is audited against them. Nobody is logged out and nobody walks anywhere.
 
-**Every sale belongs to somebody.** A shared till returns to a lock screen of role tiles when
-a sale ends, after a few seconds showing the change due. Operators tap their tile and are in;
-supervisors and managers confirm with a PIN, because their tile carries voids, refunds and the
-drawer. It is a device setting, since the research is clear that forcing it at peak in a
-nightclub would be fatal.
+**Every sale belongs to somebody.** Four people use the same screen in an hour, so the till
+returns to a lock screen when a sale ends. Every line, void, discount and drawer opening
+carries the initials of whoever was logged in, the shift report breaks takings down by
+operator, and a line somebody else rang says so on the line.
+
+The cost of that is one tap per sale, and the design spends its effort making that tap cheap:
+the sale-complete beat is three seconds with the change at 52 pt and one decision on it
+(receipt or not), answering it ends the sale early, and the tiles sit in fixed positions so
+getting back in is muscle memory rather than a search.
 
 **Offline is a mode, not an error.** Cash, accounts and manual card records keep trading. Sends
 queue with the reason visible on the line. The order is never the thing that is lost.

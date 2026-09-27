@@ -222,6 +222,10 @@ extension POSStore {
             switchMode(.takeaway)
             surface = .online
 
+        case "bar-shift":
+            switchMode(.bar)
+            surface = .shift
+
         case "takeaway-shift":
             switchMode(.takeaway)
             surface = .shift

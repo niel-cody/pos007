@@ -72,6 +72,34 @@ Three kinds of chip:
 Each venue authors its own list, so the chips on a burger are the five things a Bolt cashier
 actually hears, not the first five options in the menu.
 
+## Logging in and out
+
+A till is not one person's. Four people use the same screen in an hour, and the moment the
+software cannot say which of them rang a line, took a void or opened the drawer, everything
+built on top of that record is guesswork: the shift report, the variance, the wastage, the
+conversation about the round that nobody remembers pouring.
+
+So the till locks at the end of every sale. Not as a setting, as the model.
+
+**The lock screen is tiles, not a keypad.** One per person on shift, each saying what that
+tile can do, because a new starter should not have to be told which name is the supervisor.
+Three tiers:
+
+| Tier | Who | Getting in | What it carries |
+|---|---|---|---|
+| Standard | Bartender, barista, cashier, waiter, runner, host | One tap on the tile | Selling, removing unsent items, small discounts |
+| Semi | Supervisor | Tile, then a four-digit PIN | Voids, comps, price overrides, unlocking an order |
+| Full | Manager, administrator | Tile, then a four-digit PIN | Refunds, cash management, settings |
+
+**The handover is three seconds.** What was paid, the change at 52 pt, and one decision on the
+screen: receipt or not. Answering it ends the sale immediately; ignoring it lets the ring run
+down and hands the till back anyway. The operator who is mid-queue loses one tap, which is the
+price of the record being true.
+
+**The record is then visible, not just stored.** A cart line rung by someone else carries their
+initials. The shift surface breaks takings down by operator with their order counts. The
+timeline names who did what and who approved it.
+
 ## The cart pivots
 
 The same order reads differently depending on what the operator is about to do with it, so the
