@@ -129,15 +129,18 @@ extension POSStore {
 
         // Identical unsent lines merge. Adding the same drink twice in two seconds is
         // quantity two on one line, not two lines.
+        var addedID = item.id
         if let idx = order.items.firstIndex(where: {
             $0.mergeKey == item.mergeKey && $0.status == item.status && $0.isLive && !$0.isSentOrLater
         }) {
             order.items[idx].quantity += quantity
+            addedID = order.items[idx].id
         } else {
             item.roundID = currentRoundID(for: order)
             order.items.append(item)
         }
         currentOrder = order
+        selectedLineID = addedID
         rememberRecent(item)
         applyAutomaticAdjustments()
         if quantity >= profile.largeQuantityThreshold {

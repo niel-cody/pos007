@@ -47,10 +47,47 @@ extension POSStore {
                 route = .combo(comboID: combo.id, productID: tile.id, editing: nil)
             }
 
-        case "qsr-upsell":
+        case "qsr-upsell", "qsr-compose":
             switchMode(.qsr)
             if let burger = catalogue.product(named: "Bolt Cheeseburger") {
                 tapProduct(burger)
+            }
+
+        case "qsr-meal":
+            switchMode(.qsr)
+            if let burger = catalogue.product(named: "Bolt Cheeseburger") {
+                tapProduct(burger)
+                if let line = selectedLine, let combo = catalogue.combos.first {
+                    makeItAMeal(line.id, comboID: combo.id)
+                    toasts.removeAll()
+                }
+            }
+
+        case "lock-screen":
+            switchMode(.bar)
+            lock(reason: "Locked after the sale")
+
+        case "bar-paid":
+            switchMode(.bar)
+            if let tab = openTabs.first(where: { $0.name == "Steph" }) ?? openTabs.first {
+                openOrder(tab.id)
+                takeLock(tab.id)
+                tender(.cash, amount: order(tab.id)?.amountDue ?? .zero,
+                       tendered: Money(60))
+            }
+
+        case "bar-premium":
+            switchMode(.bar)
+            if let em = catalogue.product(named: "Espresso Martini") {
+                tapProduct(em)
+                if let confirm = pendingConfirm { _ = confirm; resolveConfirm(true) }
+                toasts.removeAll()
+            }
+
+        case "cafe-roll":
+            switchMode(.cafe)
+            if let roll = catalogue.product(named: "Bacon & Egg Roll") {
+                tapProduct(roll)
             }
 
         case "qsr-kitchen":
@@ -153,6 +190,30 @@ extension POSStore {
                 openOrder(t3.id)
             }
 
+        case "fd-seats":
+            switchMode(.fineDining)
+            if let t3 = liveOrders.first(where: { $0.tableLabel == "3" }) {
+                openOrder(t3.id)
+                cartGrouping = .seat
+            }
+
+        case "qsr-bundle":
+            switchMode(.qsr)
+            if let burger = catalogue.product(named: "Bolt Cheeseburger"),
+               let combo = catalogue.combos.first {
+                tapProduct(burger)
+                if let line = selectedLine { makeItAMeal(line.id, comboID: combo.id) }
+                if let chicken = catalogue.product(named: "Crispy Chicken") {
+                    tapProduct(chicken)
+                    if let line = selectedLine { makeItAMeal(line.id, comboID: combo.id) }
+                }
+                if let nuggets = catalogue.product(named: "Nuggets 6pc") { tapProduct(nuggets) }
+                if let cookie = catalogue.product(named: "Cookie") { tapProduct(cookie) }
+                cartGrouping = .bundle
+                selectedLineID = nil
+                toasts.removeAll()
+            }
+
         case "fd-kitchen":
             switchMode(.fineDining)
             surface = .kitchen
@@ -242,7 +303,7 @@ extension POSStore {
         if let roll = catalogue.product(named: "Bacon & Egg Roll") {
             add(product: roll, modifiers: defaultModifiers(for: roll), note: "no sauce")
         }
-        upsell = nil
+        selectedLineID = nil
     }
 
     private func buildHalfAndHalf() {
@@ -277,6 +338,6 @@ extension POSStore {
         if let coke = catalogue.product(named: "Coke 1.25L") {
             add(product: coke)
         }
-        upsell = nil
+        selectedLineID = nil
     }
 }

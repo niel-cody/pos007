@@ -156,9 +156,46 @@ struct CartHeader: View {
                     HStack(spacing: 5) { ForEach(chips, id: \.0) { chipView($0) } }
                 }
             }
+
+            if store.availableGroupings.count > 1, !order.liveItems.isEmpty {
+                groupingControl
+            }
         }
         .padding(.horizontal, Metric.pad)
         .padding(.vertical, 10)
+    }
+
+    /// The same order, read the way the next job needs it: paced, packed, poured or split.
+    private var groupingControl: some View {
+        HStack(spacing: 4) {
+            ForEach(store.availableGroupings) { option in
+                let active = store.grouping == option
+                Button {
+                    withAnimation(Motion.tap) { store.cartGrouping = option }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: option.glyph).font(.system(size: 10, weight: .bold))
+                        Text(option.label).font(.system(size: 12, weight: active ? .semibold : .medium))
+                    }
+                    .padding(.horizontal, 9)
+                    .frame(height: 28)
+                    .foregroundStyle(active ? .white : theme.inkSecondary)
+                    .background {
+                        Capsule().fill(active ? theme.accent : Color.clear)
+                    }
+                }
+                .posPress()
+            }
+            Spacer(minLength: 0)
+            Text(store.grouping.hint)
+                .font(.system(size: 10.5))
+                .foregroundStyle(theme.inkSecondary.opacity(0.75))
+                .lineLimit(1)
+        }
+        .padding(3)
+        .background {
+            Capsule().fill(theme.dark ? Color.white.opacity(0.05) : Color.black.opacity(0.035))
+        }
     }
 
     private var subtitle: String {

@@ -13,6 +13,52 @@ struct CartLineRow: View {
     private var soldOutMod: Bool { item.modifiers.contains(where: \.soldOut) }
 
     var body: some View {
+        SwipeRow(leading: leadingActions, trailing: trailingActions) {
+            rowContent
+        }
+        .contentShape(.rect)
+        .onTapGesture {
+            // Tapping a line opens the composer on it rather than a sheet. The sheet is
+            // behind More, for the long tail.
+            store.select(store.selectedLineID == item.id ? nil : item.id)
+        }
+        .contextMenu { menu }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(item.quantity) \(item.name), \(item.configurationSummary), \(item.lineTotal.formatted()), \(sendState.label)")
+    }
+
+    /// Swipe is an accelerator. Every one of these is also in the line's menu, because a wet
+    /// finger that slides a millimetre should never be the difference between a void and not.
+    private var leadingActions: [SwipeAction] {
+        [SwipeAction(title: "Add one", glyph: "plus", tint: Palette.go) {
+            store.bump(item.id, by: 1)
+        }]
+    }
+
+    private var trailingActions: [SwipeAction] {
+        var actions: [SwipeAction] = []
+        actions.append(SwipeAction(title: item.quantity == 1 ? "Remove" : "One less",
+                                   glyph: item.quantity == 1 ? "trash.fill" : "minus",
+                                   tint: item.quantity == 1 ? Palette.stop : Palette.warn,
+                                   isDestructive: item.quantity == 1) {
+            store.bump(item.id, by: -1)
+        })
+        if item.isSentOrLater {
+            actions.append(SwipeAction(title: "Rush", glyph: "flame.fill", tint: Palette.fire) {
+                store.refire(item.id)
+            })
+        } else {
+            actions.append(SwipeAction(title: "Note", glyph: "text.bubble.fill", tint: Palette.info) {
+                store.route = .note(itemID: item.id)
+            })
+        }
+        actions.append(SwipeAction(title: "Change", glyph: "wand.and.stars", tint: theme.inkSecondary) {
+            store.select(item.id)
+        })
+        return actions
+    }
+
+    private var rowContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top, spacing: 9) {
                 quantityControl
@@ -94,19 +140,13 @@ struct CartLineRow: View {
                         .padding(.vertical, 10)
                 }
             }
-        }
-        .contentShape(.rect)
-        .onTapGesture { openEditor() }
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button(role: .destructive) {
-                store.removeItem(item.id)
-            } label: {
-                Label(item.isSentOrLater ? "Void" : "Remove", systemImage: "trash")
+            .overlay {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: Metric.rChip + 2, style: .continuous)
+                        .strokeBorder(theme.accent, lineWidth: 1.6)
+                }
             }
         }
-        .contextMenu { menu }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(item.quantity) \(item.name), \(item.configurationSummary), \(item.lineTotal.formatted()), \(sendState.label)")
     }
 
     private var title: String {
@@ -116,7 +156,10 @@ struct CartLineRow: View {
         return t
     }
 
+    private var isSelected: Bool { store.selectedLineID == item.id }
+
     private var background: Color {
+        if isSelected { return theme.accent.opacity(theme.dark ? 0.28 : 0.13) }
         if soldOutMod { return Palette.stop.opacity(theme.dark ? 0.16 : 0.07) }
         if sendState.needsAttention { return Palette.stop.opacity(theme.dark ? 0.14 : 0.06) }
         if item.status == .held { return Palette.warn.opacity(theme.dark ? 0.14 : 0.07) }
@@ -221,7 +264,10 @@ struct CartLineRow: View {
     }
 
     @ViewBuilder private var menu: some View {
-        Button { openEditor() } label: { Label("Edit", systemImage: "slider.horizontal.3") }
+        Button { store.select(item.id) } label: {
+            Label("Change it", systemImage: "wand.and.stars")
+        }
+        Button { openEditor() } label: { Label("All options", systemImage: "slider.horizontal.3") }
         Button { store.route = .note(itemID: item.id) } label: {
             Label("Note", systemImage: "text.bubble")
         }

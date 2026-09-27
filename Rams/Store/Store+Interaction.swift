@@ -42,9 +42,9 @@ extension POSStore {
             route = .openPrice(productID: product.id)
             return
         }
-        // A required choice always opens the sheet. An optional one opens it only where the
-        // venue's modifiers are the interface.
-        if product.requiresChoice || (product.hasChoices && profile.tapConfigures) {
+        // Only a genuinely forced choice stops the sale. Everything else is added with its
+        // defaults and changed on the line, which is where the guest's change actually arrives.
+        if product.requiresChoice {
             route = .configure(productID: product.id, editing: nil)
             return
         }
@@ -52,7 +52,6 @@ extension POSStore {
             variant: product.variants.first(where: \.isDefault) ?? product.variants.first,
             modifiers: defaultModifiers(for: product),
             quantity: qty)
-        if !skipUpsell { offerUpsell(for: product) }
     }
 
     /// Long press is an accelerator and never the only route: it adds with defaults and
@@ -75,62 +74,11 @@ extension POSStore {
             for m in g.modifiers where m.isDefault {
                 mods.append(SelectedModifier(groupID: g.id, groupName: g.name, modifierID: m.id,
                                              name: m.name, unitPrice: m.price,
+                                             wasDefault: true,
                                              changesTheMake: m.changesTheMake))
             }
         }
         return mods
-    }
-
-    /// The offer is a strip, never a dialog: it disappears the moment the operator moves on.
-    func offerUpsell(for product: Product) {
-        guard profile.upsellEnabled else { return }
-        if let comboID = product.upsellComboIDs.first, let combo = catalogue.combo(comboID) {
-            let single = product.price
-            let sides = combo.slots.dropFirst().compactMap { slot -> Money? in
-                slot.defaultProductID.flatMap { catalogue.product($0)?.price }
-            }.total
-            let saving = (single + sides) - combo.fixedPrice
-            upsell = UpsellOffer(title: combo.name,
-                                 detail: "\((combo.fixedPrice - single).formatted()) more, save \(saving.formatted())",
-                                 comboID: comboID, productID: product.id)
-        } else if let modName = product.upsellModifierNames.first,
-                  let group = product.groups.first(where: { $0.modifiers.contains { $0.name == modName } }),
-                  let mod = group.modifiers.first(where: { $0.name == modName }) {
-            upsell = UpsellOffer(title: "Add \(mod.name)",
-                                 detail: mod.price.isZero ? "No charge" : "+\(mod.price.formatted())",
-                                 comboID: nil, productID: product.id,
-                                 groupID: group.id, modifierID: mod.id,
-                                 modifierName: mod.name, modifierPrice: mod.price)
-        }
-        clearUpsellSoon()
-    }
-
-    func clearUpsellSoon() {
-        let token = upsell?.id
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(7))
-            if upsell?.id == token { upsell = nil }
-        }
-    }
-
-    func acceptUpsell() {
-        guard let offer = upsell else { return }
-        upsell = nil
-        if let comboID = offer.comboID {
-            route = .combo(comboID: comboID, productID: offer.productID, editing: nil)
-            return
-        }
-        guard let id = currentOrderID, let o = order(id),
-              let last = o.liveItems.last(where: { $0.productID == offer.productID }),
-              let gid = offer.groupID, let mid = offer.modifierID else { return }
-        update(id) { ord in
-            guard let i = ord.items.firstIndex(where: { $0.id == last.id }) else { return }
-            ord.items[i].modifiers.append(SelectedModifier(groupID: gid, groupName: "Add",
-                                                           modifierID: mid,
-                                                           name: offer.modifierName ?? "",
-                                                           unitPrice: offer.modifierPrice ?? .zero))
-        }
-        toast(.done, "Added \(offer.modifierName ?? "")")
     }
 
     // MARK: - Cart grouping
@@ -138,12 +86,29 @@ extension POSStore {
     // A round is what the customer thinks in; a course is what the kitchen thinks in. The
     // cart groups by whichever the venue runs, and by nothing at all where it runs neither.
 
-    enum CartGrouping { case flat, courses, rounds }
+    /// The venue's default view of the cart, and the pivots it offers. Fine dining reads by
+    /// seat when the bill is split and by course when the meal is paced; a QSR packs by
+    /// bundle; a bar thinks in rounds.
+    var defaultGrouping: CartGrouping {
+        if profile.seatsEnabled { return .course }
+        if profile.coursesEnabled { return .course }
+        if profile.roundsEnabled { return .round }
+        if catalogue.combos.contains(where: { $0.kind == .meal }) { return .bundle }
+        return .order
+    }
+
+    var availableGroupings: [CartGrouping] {
+        var out: [CartGrouping] = [.order]
+        if profile.coursesEnabled { out.insert(.course, at: 0) }
+        if profile.seatsEnabled { out.append(.seat) }
+        if profile.roundsEnabled { out.insert(.round, at: 0) }
+        if catalogue.combos.contains(where: { $0.kind == .meal }) { out.append(.bundle) }
+        return out
+    }
 
     var grouping: CartGrouping {
-        if profile.coursesEnabled { return .courses }
-        if profile.roundsEnabled { return .rounds }
-        return .flat
+        get { cartGrouping ?? defaultGrouping }
+        set { cartGrouping = newValue }
     }
 
     // MARK: - Favourites and quick adds

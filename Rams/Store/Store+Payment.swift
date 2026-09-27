@@ -184,10 +184,15 @@ extension POSStore {
         }
         route = nil
         currentOrderID = nil
+        selectedLineID = nil
         surface = profile.postSaleSurface
-        let change = o.payments.filter { $0.state == .complete }.map(\.change).total
-        toast(.done, "Paid \(o.total.formatted())",
-              detail: change.cents > 0 ? "Change \(change.formatted())" : o.identifierLabel)
+        guard let closed = order(orderID) else { return }
+        presentSaleSummary(for: closed)
+        if !profile.postSaleReturnsToLock {
+            let change = closed.payments.filter { $0.state == .complete }.map(\.change).total
+            toast(.done, "Paid \(closed.total.formatted())",
+                  detail: change.cents > 0 ? "Change \(change.formatted())" : closed.identifierLabel)
+        }
     }
 
     private func recordShift(_ leg: PaymentLeg) {

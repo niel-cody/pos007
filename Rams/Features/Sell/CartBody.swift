@@ -20,9 +20,11 @@ struct CartBody: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 switch store.grouping {
-                case .courses: courseGroups
-                case .rounds: roundGroups
-                case .flat: flatLines
+                case .course: courseGroups
+                case .round: roundGroups
+                case .seat: seatGroups
+                case .bundle: bundleGroups
+                case .order: flatLines
                 }
 
                 if !order.adjustments.isEmpty {
@@ -96,6 +98,85 @@ struct CartBody: View {
     private func roundNumber(_ id: UUID) -> Int {
         let all = order.rounds.sorted { $0.at < $1.at }
         return (all.firstIndex { $0.id == id } ?? 0) + 1
+    }
+
+    // MARK: - Seats
+    //
+    // "Who is having what" is the question at the end of a fine-dining meal, and it is the
+    // one the bill depends on.
+
+    private var seatGroups: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            ForEach(order.seatsUsed, id: \.self) { seat in
+                let items = order.liveItems.filter { $0.seat == seat }
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 7) {
+                        Text("Seat \(seat)").sectionLabelStyle(theme.inkSecondary)
+                        Spacer()
+                        Text(items.map(\.lineTotal).total.formatted())
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .moneyFigure()
+                            .foregroundStyle(theme.inkSecondary)
+                    }
+                    ForEach(items) { CartLineRow(order: order, item: $0) }
+                }
+            }
+            let shared = order.liveItems.filter { $0.seat == nil }
+            if !shared.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 7) {
+                        Text("Shared").sectionLabelStyle(theme.inkSecondary)
+                        Text("split across the table when the bill is split")
+                            .font(.system(size: 11))
+                            .foregroundStyle(theme.inkSecondary.opacity(0.8))
+                        Spacer()
+                        Text(shared.map(\.lineTotal).total.formatted())
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .moneyFigure()
+                            .foregroundStyle(theme.inkSecondary)
+                    }
+                    ForEach(shared) { CartLineRow(order: order, item: $0) }
+                }
+            }
+        }
+    }
+
+    // MARK: - Bundles
+    //
+    // What goes in the bag, in the shape it goes in: each meal as a block, then the extras.
+
+    private var bundleGroups: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            let meals = order.liveItems.filter { !$0.comboChildren.isEmpty }
+            let singles = order.liveItems.filter { $0.comboChildren.isEmpty }
+            ForEach(Array(meals.enumerated()), id: \.element.id) { index, meal in
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 7) {
+                        Text("Bag \(index + 1) · \(meal.comboName ?? "Meal")")
+                            .sectionLabelStyle(theme.inkSecondary)
+                        Spacer()
+                        Text(meal.lineTotal.formatted())
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .moneyFigure()
+                            .foregroundStyle(theme.inkSecondary)
+                    }
+                    CartLineRow(order: order, item: meal)
+                }
+            }
+            if !singles.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Text(meals.isEmpty ? "Items" : "Extras").sectionLabelStyle(theme.inkSecondary)
+                        Spacer()
+                        Text(singles.map(\.lineTotal).total.formatted())
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .moneyFigure()
+                            .foregroundStyle(theme.inkSecondary)
+                    }
+                    ForEach(singles) { CartLineRow(order: order, item: $0) }
+                }
+            }
+        }
     }
 
     // MARK: - Flat

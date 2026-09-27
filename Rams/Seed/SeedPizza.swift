@@ -12,11 +12,11 @@ enum PizzaSeed {
         let drinks = Category(name: "Drinks", glyph: "cup.and.straw.fill", accent: 6)
         let dolci = Category(name: "Dolci", glyph: "birthday.cake.fill", accent: 8)
 
-        let crust = Seed.group("Crust", .single, min: 1, max: 1, [
+        let crust = Seed.group("Crust", .single, min: 1, max: 1, ask: .offered, [
             Seed.mod("Classic", def: true), Seed.mod("Thin"), Seed.mod("Thick"),
             Seed.mod("Gluten free", 4.00), Seed.mod("Stuffed crust", 5.00)
         ])
-        let base = Seed.group("Base", .single, min: 1, max: 1, [
+        let base = Seed.group("Base", .single, min: 1, max: 1, ask: .quiet, [
             Seed.mod("Tomato", def: true), Seed.mod("Garlic cream"), Seed.mod("BBQ"), Seed.mod("No base")
         ])
         let toppings = Seed.group("Toppings", .multi, [
@@ -28,7 +28,7 @@ enum PizzaSeed {
             Seed.mod("Salami", 3.50), Seed.mod("Egg", 2.50, allergens: ["Egg"]),
             Seed.mod("Extra cheese", 3.00, allergens: ["Dairy"]), Seed.mod("Truffle oil", 4.00)
         ])
-        let removals = Seed.group("Hold", .multi, [
+        let removals = Seed.group("Hold", .multi, ask: .offered, [
             Seed.mod("No cheese"), Seed.mod("Light cheese"), Seed.mod("No onion"),
             Seed.mod("Well done"), Seed.mod("Cut in squares"), Seed.mod("Uncut")
         ])
@@ -40,6 +40,8 @@ enum PizzaSeed {
                     glyph: "circle.grid.cross.fill", accent: accent,
                     variantAxisName: "Size", variants: sizeAxis,
                     groups: [crust, base, toppings, removals],
+                    quickActions: ["Thin", "Gluten free", "Extra cheese", "Chilli",
+                                   "Well done", "Cut in squares"],
                     allergens: allergens, favourite: fav)
         }
 

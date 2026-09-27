@@ -197,10 +197,6 @@ struct VenueProfile: Codable {
     var largeQuantityThreshold: Int
     var wetEnvironment: Bool
     var darkPreferred: Bool
-    /// Whether a tap opens the configuration sheet. Where modifiers are the interface (a café,
-    /// a pizza shop) it must. At a bar, where the sizes have defaults and the queue is ten
-    /// deep, a tap adds the default and the sheet is one long press away.
-    var tapConfigures: Bool
 
     // Payment
     var quickTenders: [TenderKind]
@@ -232,6 +228,17 @@ struct VenueProfile: Codable {
 
     var mapsDrinksToNow: Bool      // pub: drinks poured now, food to the kitchen
     var queueBoardEnabled: Bool
+
+    // Login
+    /// A shared till goes back to the lock screen when a sale ends, so the next round is rung
+    /// under the name of whoever poured it. The research warns this is fatal at peak in a
+    /// nightclub, which is why it is a device setting rather than a rule.
+    var postSaleReturnsToLock: Bool
+    /// How long the completed sale stays up before it locks. Long enough to read the change,
+    /// short enough not to hold the queue.
+    var lockGraceSeconds: Int
+    /// Supervisors and above confirm with a PIN; operators tap their tile and are in.
+    var pinAboveOperator: Bool
 }
 
 extension VenueProfile {
@@ -271,7 +278,6 @@ extension VenueProfile {
             largeQuantityThreshold: 24,
             wetEnvironment: false,
             darkPreferred: false,
-            tapConfigures: true,
             quickTenders: [.cash, .card],
             allTenders: [.cash, .card, .giftCard, .voucher, .houseAccount, .other],
             maxSplitPayments: 4,
@@ -295,7 +301,10 @@ extension VenueProfile {
             kdsEnabled: false,
             labelPrinting: false,
             mapsDrinksToNow: false,
-            queueBoardEnabled: false
+            queueBoardEnabled: false,
+            postSaleReturnsToLock: false,
+            lockGraceSeconds: 6,
+            pinAboveOperator: true
         )
     }
 
@@ -360,7 +369,8 @@ extension VenueProfile {
             p.largeQuantityThreshold = 12
             p.wetEnvironment = true
             p.darkPreferred = true
-            p.tapConfigures = false
+            p.postSaleReturnsToLock = true
+            p.lockGraceSeconds = 6
             p.quickTenders = [.card, .cash]
             p.quickPaymentMode = true
             p.tipsEnabled = true
@@ -384,6 +394,8 @@ extension VenueProfile {
             p.roundsEnabled = true
             p.memberPricing = true
             p.houseAccounts = true
+            p.postSaleReturnsToLock = true
+            p.lockGraceSeconds = 7
             p.grid = .standard
             p.quickTenders = [.cash, .card]
             p.stations = ["Grill", "Larder", "Bar"]
@@ -528,7 +540,48 @@ struct Staff: Identifiable, Hashable, Codable {
     enum Role: String, Codable, CaseIterable {
         case cashier, barista, waiter, bartender, runner, host, supervisor, manager, admin
 
-        var label: String { rawValue.capitalized }
+        var label: String {
+            switch self {
+            case .cashier: "Cashier"
+            case .barista: "Barista"
+            case .waiter: "Waiter"
+            case .bartender: "Bartender"
+            case .runner: "Runner"
+            case .host: "Host"
+            case .supervisor: "Supervisor"
+            case .manager: "Manager"
+            case .admin: "Administrator"
+            }
+        }
+
+        /// What this tile gets you, in the words a new starter would use.
+        var summary: String {
+            switch self {
+            case .cashier, .barista, .runner, .host:
+                "Sell, remove unsent items, small discounts"
+            case .waiter, .bartender:
+                "Sell, tables and tabs, small discounts"
+            case .supervisor:
+                "Everything above, plus voids, comps, price overrides and unlocking"
+            case .manager, .admin:
+                "Full access, including refunds, cash management and settings"
+            }
+        }
+
+        var tier: String {
+            switch self {
+            case .supervisor: "Semi"
+            case .manager, .admin: "Full"
+            default: "Standard"
+            }
+        }
+
+        var needsPIN: Bool {
+            switch self {
+            case .supervisor, .manager, .admin: true
+            default: false
+            }
+        }
 
         /// Frequency times consequence decides the tier; role decides who may.
         var permissions: Set<Permission> {

@@ -154,12 +154,12 @@ struct OrderItem: Identifiable, Hashable, Codable {
                 portions.map(\.productName).joined(separator: "/")].joined(separator: "~")
     }
 
-    /// The one-line summary a cart shows under the name.
+    /// The one-line summary a cart shows under the name: what was asked for, not what came
+    /// as standard. A swap still shows, because the brand in the glass is the point of it.
     var configurationSummary: String {
         var parts: [String] = []
         if let v = variantLabel { parts.append(v) }
-        parts.append(contentsOf: modifiers.map(\.label))
-        parts.append(contentsOf: comboChildren.map(\.name))
+        parts.append(contentsOf: modifiers.filter { !$0.wasDefault || $0.isRemoval }.map(\.label))
         if let n = note { parts.append("“\(n)”") }
         return parts.joined(separator: " · ")
     }
@@ -379,4 +379,42 @@ struct Order: Identifiable, Hashable, Codable {
     }
 
     var seatsUsed: [Int] { Array(Set(liveItems.compactMap(\.seat))).sorted() }
+}
+
+/// How the cart is arranged. The same order reads differently depending on what the operator
+/// is about to do with it: pace a meal, pack a bag, pour a round, or split a bill by seat.
+enum CartGrouping: String, CaseIterable, Identifiable {
+    case order, course, seat, round, bundle
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .order: "As rung"
+        case .course: "Course"
+        case .seat: "Seat"
+        case .round: "Round"
+        case .bundle: "Bundle"
+        }
+    }
+
+    var glyph: String {
+        switch self {
+        case .order: "list.bullet"
+        case .course: "list.number"
+        case .seat: "chair.lounge"
+        case .round: "arrow.trianglehead.2.clockwise.rotate.90"
+        case .bundle: "takeoutbag.and.cup.and.straw"
+        }
+    }
+
+    var hint: String {
+        switch self {
+        case .order: "in the order they were rung"
+        case .course: "paced by the floor"
+        case .seat: "who is having what"
+        case .round: "what was poured together"
+        case .bundle: "meals together, extras after"
+        }
+    }
 }

@@ -24,6 +24,21 @@ struct Modifier: Identifiable, Hashable, Codable {
     var displayName: String { kitchenName ?? name }
 }
 
+/// When the interface should ask.
+///
+/// The rule is narrow on purpose: **force only what cannot be made without an answer.** A
+/// group with a sensible default is never a question at add time. It is a chip on the line,
+/// which is where the guest's change actually arrives — halfway through the sentence, after
+/// the thing is already on the order.
+enum AskPolicy: String, Codable {
+    /// No safe default exists. A steak has to be cooked to something.
+    case forced
+    /// Has a default and is changed often. One tap on the line, no sheet.
+    case offered
+    /// Has a default and is changed rarely. Lives in the full sheet only.
+    case quiet
+}
+
 struct ModifierGroup: Identifiable, Hashable, Codable {
     var id = UUID()
     var name: String
@@ -32,9 +47,19 @@ struct ModifierGroup: Identifiable, Hashable, Codable {
     var max: Int = 0              // zero means unlimited
     var modifiers: [Modifier] = []
     var freeFirstUnit: Bool = false
+    var policy: AskPolicy = .offered
+    /// A swap rather than an addition: choosing one replaces the house pour and reprices the
+    /// line. The line shows the chosen one instead of the default.
+    var isSwap: Bool = false
     /// A group of eighteen syrups needs search; a group of three does not. (W02.03.f)
     var needsSearch: Bool { modifiers.count > 10 }
     var isRequired: Bool { min >= 1 }
+
+    /// A forced group is one the kitchen cannot proceed without: a minimum to satisfy and no
+    /// default that satisfies it.
+    var isForced: Bool {
+        policy == .forced || (min >= 1 && modifiers.filter(\.isDefault).count < min)
+    }
 
     var effectiveMax: Int { max == 0 ? modifiers.count : max }
 }
@@ -49,6 +74,9 @@ struct SelectedModifier: Identifiable, Hashable, Codable {
     var quantity: Int = 1
     /// A default that was toggled off prints as "- Name" on the docket. (W02.04)
     var isRemoval: Bool = false
+    /// Chosen because it was the default, not because anyone asked for it. Kept off the line
+    /// so the summary reads as the guest's order rather than the menu's.
+    var wasDefault: Bool = false
     var soldOut: Bool = false
     var changesTheMake: Bool = true
     /// Fraction of the product this applies to: 1 for whole, 0.5 for one half of a pizza. (W02.14)
@@ -134,6 +162,9 @@ struct Product: Identifiable, Hashable, Codable {
     var comboID: UUID?                     // this tile builds a combo
     var upsellComboIDs: [UUID] = []        // "make it a meal"
     var upsellModifierNames: [String] = [] // "add a shot of vanilla"
+    /// The changes this venue's operators actually make to this product, most common first.
+    /// They become one-tap chips on the line. Everything else stays in the sheet.
+    var quickActions: [String] = []
     var soldOut: Bool = false
     var trackedQuantity: Int?              // last six sourdough
     var ageRestricted: Bool = false
@@ -147,11 +178,12 @@ struct Product: Identifiable, Hashable, Codable {
 
     var displayName: String { kitchenName ?? name }
     var hasChoices: Bool { !variants.isEmpty || !groups.isEmpty || comboID != nil }
+
+    /// Whether adding this product has to stop and ask. A combo has to be built. A forced
+    /// group has to be answered. Everything else is added and changed on the line.
     var requiresChoice: Bool {
         if comboID != nil { return true }
-        return groups.contains { group in
-            group.isRequired && group.modifiers.filter(\.isDefault).count < group.min
-        }
+        return groups.contains(where: \.isForced)
     }
     var isAvailable: Bool { !soldOut && (trackedQuantity ?? 1) > 0 }
 }

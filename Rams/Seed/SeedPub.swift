@@ -13,8 +13,10 @@ enum PubSeed {
         let wines = Category(name: "Wine & Spirits", glyph: "wineglass.fill", accent: 9)
         let desserts = Category(name: "Dessert", glyph: "birthday.cake.fill", accent: 8)
 
-        let cookingTemp = Seed.group("Cooked", .single, min: 1, max: 1, [
-            Seed.mod("Rare"), Seed.mod("Medium rare"), Seed.mod("Medium", def: true),
+        // No default on purpose. A steak cannot be cooked to "whatever", so this is the one
+        // thing in the venue that stops the sale and asks.
+        let cookingTemp = Seed.group("Cooked", .single, min: 1, max: 1, ask: .forced, [
+            Seed.mod("Rare"), Seed.mod("Medium rare"), Seed.mod("Medium"),
             Seed.mod("Medium well"), Seed.mod("Well done")
         ])
         let steakSauce = Seed.group("Sauce", .single, min: 1, max: 1, [
@@ -25,7 +27,7 @@ enum PubSeed {
             Seed.mod("Chips & salad", def: true), Seed.mod("Mash & veg"),
             Seed.mod("Roast veg"), Seed.mod("Salad only"), Seed.mod("Chips only")
         ])
-        let dietary = Seed.group("Dietary", .multi, [
+        let dietary = Seed.group("Dietary", .multi, ask: .offered, [
             Seed.mod("Gluten free", 2.00), Seed.mod("No dairy"), Seed.mod("No onion"), Seed.mod("Nut allergy")
         ])
         let glassSize = Seed.variants([("Schooner", 0, true), ("Pint", 2.00, false), ("Jug", 11.00, false)])
@@ -33,6 +35,8 @@ enum PubSeed {
         let steak = Product(name: "Rump Steak 300g", price: Money(32.00), categoryID: mains.id,
                             station: "Grill", glyph: "flame.fill", accent: 0,
                             groups: [cookingTemp, steakSauce, sideChoice, dietary],
+                            quickActions: ["Mushroom", "Pepper", "Mash & veg", "Chips only",
+                                           "Gluten free"],
                             courseHint: "Food", favourite: true)
         let scotch = Product(name: "Scotch Fillet 350g", price: Money(44.00), categoryID: mains.id,
                              station: "Grill", glyph: "flame.circle.fill", accent: 0,
@@ -41,7 +45,10 @@ enum PubSeed {
                             station: "Grill", glyph: "square.stack.fill", accent: 1,
                             groups: [sideChoice, Seed.group("Style", .single, min: 0, max: 1, [
                                 Seed.mod("Classic", def: true), Seed.mod("Hawaiian", 2.00), Seed.mod("Mexican", 2.00)
-                            ]), dietary], allergens: ["Gluten", "Dairy"], courseHint: "Food", favourite: true)
+                            ]), dietary],
+                            quickActions: ["Hawaiian", "Mexican", "Mash & veg", "Salad only",
+                                           "Gluten free"],
+                            allergens: ["Gluten", "Dairy"], courseHint: "Food", favourite: true)
         let fish = Product(name: "Fish & Chips", price: Money(26.00), categoryID: pubFav.id,
                            station: "Larder", glyph: "fish.fill", accent: 6,
                            groups: [Seed.group("Fish", .single, min: 1, max: 1, [

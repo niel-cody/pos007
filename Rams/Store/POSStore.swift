@@ -159,7 +159,13 @@ final class POSStore {
     var floorSectionID: UUID?
     var courseFilterID: UUID?
     var lastRoundID: UUID?
-    var upsell: UpsellOffer?
+    /// The line the composer is acting on. Adding something selects it.
+    var selectedLineID: UUID?
+    var cartGrouping: CartGrouping?
+    var isLocked: Bool = false
+    var lockReason: String?
+    var saleSummary: SaleSummary?
+    var lockCountdown: Int = 0
 
     enum CardOutcome: String, CaseIterable, Identifiable {
         case approve, decline, timeout
@@ -226,6 +232,10 @@ final class POSStore {
         searchText = ""
         keypadPrefix = ""
         courseFilterID = nil
+        cartGrouping = nil
+        selectedLineID = nil
+        isLocked = false
+        saleSummary = nil
         simulatedHour = seed.hour
         nextOrderNumber = (orders.map(\.number).max() ?? 1040) + 1
         nextToken = (orders.compactMap(\.token).max() ?? 11) + 1

@@ -11,7 +11,7 @@ struct ProductArea: View {
                     if store.profile.recentsEnabled && !store.recents.isEmpty {
                         recentsStrip
                     }
-                    if store.grouping == .rounds, let o = store.currentOrder, !o.rounds.isEmpty {
+                    if store.grouping == .round, let o = store.currentOrder, !o.rounds.isEmpty {
                         repeatRoundStrip(o)
                     }
                 }
@@ -21,13 +21,14 @@ struct ProductArea: View {
             .padding(.bottom, 120)
         }
         .overlay(alignment: .bottom) {
-            if let offer = store.upsell {
-                upsellStrip(offer)
-                    .padding(.bottom, 14)
+            if let line = store.selectedLine {
+                LineComposer(item: line)
+                    .padding(.horizontal, Metric.pad)
+                    .padding(.bottom, 12)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(Motion.panel, value: store.upsell)
+        .animation(Motion.panel, value: store.selectedLineID)
     }
 
     // MARK: - Recents
@@ -128,40 +129,6 @@ struct ProductArea: View {
         }
     }
 
-    // MARK: - Upsell
-
-    private func upsellStrip(_ offer: UpsellOffer) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 15, weight: .bold))
-                .foregroundStyle(theme.accent)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(offer.title).font(.system(size: 15, weight: .semibold)).foregroundStyle(theme.ink)
-                Text(offer.detail).font(.system(size: 12.5)).foregroundStyle(theme.inkSecondary)
-            }
-            Spacer(minLength: 10)
-            Button("No thanks") { store.upsell = nil }
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(theme.inkSecondary)
-            Button {
-                store.acceptUpsell()
-            } label: {
-                Text("Add")
-                    .font(.system(size: 15, weight: .semibold))
-                    .padding(.horizontal, 20)
-                    .frame(height: 40)
-                    .foregroundStyle(.white)
-                    .background(Capsule().fill(theme.accent))
-            }
-            .posPress()
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 9)
-        .background {
-            Capsule().fill(theme.surface)
-                .shadow(color: .black.opacity(theme.dark ? 0.5 : 0.16), radius: 20, y: 8)
-        }
-    }
 }
 
 // MARK: - Product tile

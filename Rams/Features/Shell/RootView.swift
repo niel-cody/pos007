@@ -36,6 +36,17 @@ struct RootView: View {
                     .transition(.opacity)
             }
         }
+        .overlay {
+            if let summary = store.saleSummary {
+                SaleCompleteScreen(summary: summary)
+                    .transition(.opacity)
+            }
+        }
+        .overlay {
+            if store.isLocked {
+                LockScreen()
+            }
+        }
         .overlay(alignment: .topTrailing) {
             if showDemoPanel {
                 DemoPanel(isOpen: $showDemoPanel)
@@ -46,6 +57,8 @@ struct RootView: View {
         }
         .animation(Motion.panel, value: store.route)
         .animation(Motion.quick, value: store.pendingConfirm)
+        .animation(Motion.panel, value: store.isLocked)
+        .animation(Motion.panel, value: store.saleSummary)
         // Visual confirmation is the primary signal; the haptic is the second one, because a
         // venue is loud and audio cannot be relied on. (W21.11)
         .sensoryFeedback(.success, trigger: store.feedbackTick)
@@ -241,6 +254,9 @@ private struct Chrome: View {
                 }
             }
             Divider()
+            Button { store.lock(reason: "Locked by \(store.operatorStaff.name.firstWord)") } label: {
+                Label("Lock the till", systemImage: "lock.fill")
+            }
             Button { store.route = .help } label: { Label("What to try", systemImage: "sparkles") }
         } label: {
             HStack(spacing: 7) {
@@ -296,6 +312,8 @@ private struct KeyboardShortcuts: View {
                 .keyboardShortcut(".", modifiers: .command)
             Button("Close") { store.route = nil }
                 .keyboardShortcut(.escape, modifiers: [])
+            Button("Lock") { store.lock(reason: "Locked by \(store.operatorStaff.name.firstWord)") }
+                .keyboardShortcut("l", modifiers: .command)
             ForEach(Array(store.profile.surfaces.enumerated()), id: \.element) { i, s in
                 Button(s.title) { store.surface = s }
                     .keyboardShortcut(KeyEquivalent(Character("\(i + 1)")), modifiers: .command)

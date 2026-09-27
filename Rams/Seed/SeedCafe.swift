@@ -42,7 +42,7 @@ enum CafeSeed {
             Seed.mod("Raw sugar", maxPer: 4, makes: false),
             Seed.mod("Honey", 0.30, maxPer: 2)
         ])
-        let syrup = Seed.group("Syrup", .multi, [
+        let syrup = Seed.group("Syrup", .multi, ask: .quiet, [
             Seed.mod("Vanilla", 0.70, pinned: true),
             Seed.mod("Caramel", 0.70, pinned: true),
             Seed.mod("Hazelnut", 0.70, pinned: true),
@@ -52,7 +52,7 @@ enum CafeSeed {
             Seed.mod("Cinnamon", 0.50), Seed.mod("Rose", 0.70),
             Seed.mod("Lavender", 0.70)
         ])
-        let cup = Seed.group("Cup", .single, min: 1, max: 1, [
+        let cup = Seed.group("Cup", .single, min: 1, max: 1, ask: .quiet, [
             Seed.mod("Takeaway cup", def: true),
             Seed.mod("Dine in cup"),
             Seed.mod("Own cup", -0.50),
@@ -66,7 +66,8 @@ enum CafeSeed {
                     variantAxisName: "Size",
                     variants: Seed.variants([("Small", 0, false), ("Regular", 0.60, true), ("Large", 1.20, false)]),
                     groups: [milk, strength, shots, temp, sugar, syrup, cup],
-                    upsellModifierNames: ["Vanilla", "Extra shot"],
+                    quickActions: ["Oat", "Extra shot", "Decaf", "Extra hot",
+                                   "Half strength", "Sugar", "Vanilla"],
                     isDrink: true, favourite: favourite)
         }
 
@@ -125,11 +126,14 @@ enum CafeSeed {
 
             Product(name: "Bacon & Egg Roll", price: Money(12.50), categoryID: food.id, station: "Kitchen",
                     glyph: "takeoutbag.and.cup.and.straw.fill", accent: 0,
-                    groups: [Seed.group("Sauce", .single, min: 1, max: 1, [
+                    groups: [Seed.group("Sauce", .single, min: 1, max: 1, ask: .offered, [
                         Seed.mod("BBQ", def: true), Seed.mod("Tomato"), Seed.mod("Aioli"), Seed.mod("Chilli jam"), Seed.mod("No sauce")
                     ]), Seed.group("Add", .multi, [
                         Seed.mod("Avocado", 3.50), Seed.mod("Extra bacon", 4.00), Seed.mod("Hash brown", 2.50), Seed.mod("Cheese", 1.50)
-                    ]), Seed.group("Remove", .multi, [Seed.mod("No egg"), Seed.mod("No bacon")])],
+                    ]), Seed.group("Remove", .multi, ask: .offered,
+                                   [Seed.mod("No egg"), Seed.mod("No bacon")])],
+                    quickActions: ["Tomato", "Chilli jam", "Avocado", "Extra bacon",
+                                   "No sauce", "Hash brown"],
                     allergens: ["Gluten", "Egg"], courseHint: "Food", favourite: true),
             Product(name: "Avo Smash", price: Money(19.50), categoryID: food.id, station: "Kitchen",
                     glyph: "leaf.fill", accent: 4,
@@ -137,7 +141,9 @@ enum CafeSeed {
                         Seed.mod("Sourdough", def: true), Seed.mod("Rye"), Seed.mod("Gluten free", 1.50), Seed.mod("Turkish")
                     ]), Seed.group("Add", .multi, [
                         Seed.mod("Poached egg", 3.00), Seed.mod("Feta", 2.50), Seed.mod("Smoked salmon", 6.00), Seed.mod("Halloumi", 4.00)
-                    ])], allergens: ["Gluten"], favourite: true),
+                    ])],
+                    quickActions: ["Poached egg", "Halloumi", "Smoked salmon", "Gluten free"],
+                    allergens: ["Gluten"], favourite: true),
             Product(name: "Big Brekky", price: Money(26.00), categoryID: food.id, station: "Kitchen",
                     glyph: "sun.horizon.fill", accent: 1,
                     groups: [Seed.group("Eggs", .single, min: 1, max: 1, [

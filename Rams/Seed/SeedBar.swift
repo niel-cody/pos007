@@ -22,14 +22,14 @@ enum BarSeed {
         }
 
         let spiritGroups = [
-            Seed.group("Pour", .single, min: 1, max: 1, [
+            Seed.group("Pour", .single, min: 1, max: 1, ask: .offered, [
                 Seed.mod("Single", def: true), Seed.mod("Double", 4.00), Seed.mod("Neat"), Seed.mod("On the rocks")
             ]),
             Seed.group("Mixer", .single, min: 0, max: 1, [
                 Seed.mod("Soda", pinned: true), Seed.mod("Tonic", pinned: true), Seed.mod("Coke", pinned: true),
                 Seed.mod("Dry ginger"), Seed.mod("Lemonade"), Seed.mod("Ginger beer", 1.00), Seed.mod("No mixer")
             ]),
-            Seed.group("Garnish", .multi, [
+            Seed.group("Garnish", .multi, ask: .quiet, [
                 Seed.mod("Lime"), Seed.mod("Lemon"), Seed.mod("Orange"), Seed.mod("Olive"), Seed.mod("No garnish")
             ])
         ]
@@ -37,6 +37,7 @@ enum BarSeed {
         func spirit(_ name: String, _ price: Double, accent: Int) -> Product {
             Product(name: name, price: Money(price), categoryID: spirits.id, station: "Bar",
                     glyph: "flask.fill", accent: accent, groups: spiritGroups,
+                    quickActions: ["Double", "Soda", "Tonic", "Coke", "Lime"],
                     ageRestricted: true, isDrink: true)
         }
 
@@ -44,17 +45,37 @@ enum BarSeed {
             Seed.mod("Glass", def: true), Seed.mod("Bottle", 32.00)
         ])]
 
-        let cocktailGroups = [
-            Seed.group("Strength", .single, min: 0, max: 1, [
-                Seed.mod("Standard", def: true), Seed.mod("Extra shot", 4.00), Seed.mod("Virgin", -4.00)
+        // The base spirit is a swap, not an addition: choosing one replaces the house pour,
+        // reprices the line and puts the brand on the docket. This is the single most valuable
+        // change a bartender makes, and it is worth more than every modifier combined.
+        func spiritSwap(_ axis: String, _ options: [(String, Double)]) -> ModifierGroup {
+            Seed.group(axis, .single, min: 1, max: 1, ask: .offered, swap: true,
+                       [Seed.mod("House \(axis.lowercased())", def: true)]
+                       + options.map { Seed.mod($0.0, $0.1) })
+        }
+
+        let vodkaSwap = spiritSwap("Vodka", [("Ketel One", 3.00), ("Grey Goose", 4.00),
+                                             ("Belvedere", 6.00), ("Beluga", 9.00)])
+        let ginSwap = spiritSwap("Gin", [("Tanqueray", 3.00), ("Hendrick’s", 5.00),
+                                         ("Monkey 47", 8.00)])
+        let tequilaSwap = spiritSwap("Tequila", [("Espolòn", 3.00), ("Patrón", 6.00),
+                                                 ("Don Julio 1942", 14.00)])
+        let whiskySwap = spiritSwap("Whisky", [("Woodford Reserve", 5.00), ("Michter’s", 8.00),
+                                               ("Yamazaki 12", 16.00)])
+
+        let cocktailBase = [
+            Seed.group("Strength", .single, min: 0, max: 1, ask: .offered, [
+                Seed.mod("Standard", def: true), Seed.mod("Double", 6.00), Seed.mod("Virgin", -4.00)
             ]),
-            Seed.group("Glass", .single, min: 0, max: 1, [
+            Seed.group("Glass", .single, min: 0, max: 1, ask: .quiet, [
                 Seed.mod("Coupe", def: true), Seed.mod("Rocks"), Seed.mod("Highball"), Seed.mod("Martini")
             ]),
-            Seed.group("Garnish", .multi, [
-                Seed.mod("Twist"), Seed.mod("Cherry"), Seed.mod("Mint"), Seed.mod("Salt rim"), Seed.mod("No garnish")
+            Seed.group("Garnish", .multi, ask: .quiet, [
+                Seed.mod("Twist"), Seed.mod("Cherry"), Seed.mod("Mint"), Seed.mod("Salt rim"),
+                Seed.mod("Extra coffee bean"), Seed.mod("No garnish")
             ])
         ]
+        let cocktailGroups = cocktailBase
 
         let paleAle = beer("Pale Ale", 9.50, accent: 1, fav: true)
         let lager = beer("Lager", 8.50, accent: 2, fav: true)
@@ -98,17 +119,23 @@ enum BarSeed {
             spirit("Aperol", 12.00, accent: 1),
 
             Product(name: "Espresso Martini", price: Money(22.00), categoryID: cocktails.id, station: "Bar",
-                    glyph: "sparkles", accent: 0, groups: cocktailGroups, ageRestricted: true, isDrink: true, favourite: true),
+                    glyph: "sparkles", accent: 0, groups: [vodkaSwap] + cocktailBase,
+                    quickActions: ["Double", "Extra coffee bean", "No garnish"],
+                    ageRestricted: true, isDrink: true, favourite: true),
             Product(name: "Negroni", price: Money(21.00), categoryID: cocktails.id, station: "Bar",
-                    glyph: "sparkles", accent: 5, groups: cocktailGroups, ageRestricted: true, isDrink: true),
+                    glyph: "sparkles", accent: 5, groups: [ginSwap] + cocktailBase,
+                    quickActions: ["Double", "Twist"], ageRestricted: true, isDrink: true),
             Product(name: "Margarita", price: Money(20.00), categoryID: cocktails.id, station: "Bar",
-                    glyph: "sparkles", accent: 4, groups: cocktailGroups, ageRestricted: true, isDrink: true, favourite: true),
+                    glyph: "sparkles", accent: 4, groups: [tequilaSwap] + cocktailBase,
+                    quickActions: ["Salt rim", "Double"], ageRestricted: true, isDrink: true, favourite: true),
             Product(name: "Old Fashioned", price: Money(23.00), categoryID: cocktails.id, station: "Bar",
-                    glyph: "sparkles", accent: 1, groups: cocktailGroups, ageRestricted: true, isDrink: true),
+                    glyph: "sparkles", accent: 1, groups: [whiskySwap] + cocktailBase,
+                    quickActions: ["Double", "Cherry"], ageRestricted: true, isDrink: true),
             Product(name: "Spritz", price: Money(19.00), categoryID: cocktails.id, station: "Bar",
                     glyph: "sparkles", accent: 2, groups: cocktailGroups, ageRestricted: true, isDrink: true),
             Product(name: "Paloma", price: Money(20.00), categoryID: cocktails.id, station: "Bar",
-                    glyph: "sparkles", accent: 3, groups: cocktailGroups, ageRestricted: true, isDrink: true),
+                    glyph: "sparkles", accent: 3, groups: [tequilaSwap] + cocktailBase,
+                    quickActions: ["Double", "Salt rim"], ageRestricted: true, isDrink: true),
 
             Product(name: "Coke", price: Money(4.50), categoryID: soft.id, station: "Bar",
                     glyph: "cup.and.straw.fill", accent: 6, isDrink: true),

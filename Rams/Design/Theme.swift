@@ -91,6 +91,10 @@ struct Theme {
     var ink: Color { dark ? palette.inkDark : palette.ink }
     var inkSecondary: Color { dark ? palette.inkSecondaryDark : palette.inkSecondary }
     var accent: Color { palette.accent }
+    /// A brighter accent for text on a tinted fill, which a dark room needs.
+    var accentText: Color {
+        dark ? Color(hue: palette.hue / 360, saturation: 0.40, brightness: 0.97) : palette.accent
+    }
     var accentSoft: Color { dark ? palette.accentSoftDark : palette.accentSoft }
     var hairline: Color { dark ? palette.hairlineDark : palette.hairline }
 

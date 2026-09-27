@@ -515,7 +515,6 @@ struct ConfigureSheet: View {
         } else {
             store.add(product: product, variant: variant, modifiers: selections,
                       quantity: quantity, note: note.isEmpty ? nil : note, seat: seat)
-            store.offerUpsell(for: product)
         }
         store.route = nil
     }

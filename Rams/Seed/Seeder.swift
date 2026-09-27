@@ -21,9 +21,11 @@ enum Seed {
 
     static func group(_ name: String, _ selection: ModifierSelection = .multi,
                       min: Int = 0, max: Int = 0, freeFirst: Bool = false,
+                      ask: AskPolicy = .offered, swap: Bool = false,
                       _ mods: [Modifier]) -> ModifierGroup {
         ModifierGroup(name: name, selection: selection, min: min, max: max,
-                      modifiers: mods, freeFirstUnit: freeFirst)
+                      modifiers: mods, freeFirstUnit: freeFirst,
+                      policy: ask, isSwap: swap)
     }
 
     static func mod(_ name: String, _ price: Double = 0, def: Bool = false,

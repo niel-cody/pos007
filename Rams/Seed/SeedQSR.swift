@@ -10,7 +10,7 @@ enum QSRSeed {
         let drinks = Category(name: "Drinks", glyph: "cup.and.straw.fill", accent: 6)
         let sweets = Category(name: "Sweet", glyph: "birthday.cake.fill", accent: 9)
 
-        let cook = Seed.group("Cook", .single, min: 1, max: 1, [
+        let cook = Seed.group("Cook", .single, min: 1, max: 1, ask: .offered, [
             Seed.mod("Standard", def: true), Seed.mod("Well done"), Seed.mod("No pink")
         ])
         let remove = Seed.group("Hold", .multi, [
@@ -27,25 +27,34 @@ enum QSRSeed {
             Seed.mod("Bolt sauce", pinned: true), Seed.mod("BBQ", pinned: true),
             Seed.mod("Aioli"), Seed.mod("Chipotle"), Seed.mod("Mustard"), Seed.mod("Extra sauce", 0.80)
         ])
-        let bun = Seed.group("Bun", .single, min: 1, max: 1, [
+        let bun = Seed.group("Bun", .single, min: 1, max: 1, ask: .quiet, [
             Seed.mod("Milk bun", def: true), Seed.mod("Sesame"),
             Seed.mod("Gluten free", 2.00), Seed.mod("Lettuce wrap")
         ])
 
+        // The five changes a Bolt cashier actually makes to a cheeseburger, in the order the
+        // guest says them.
+        let burgerQuick = ["Bacon", "Cheese slice", "No pickles", "Extra patty", "No onion"]
+
         var cheeseburger = Product(name: "Bolt Cheeseburger", price: Money(11.90), categoryID: burgers.id,
                                    station: "Grill", glyph: "flame.fill", accent: 0,
                                    groups: [bun, cook, sauce, addOns, remove],
+                                   quickActions: burgerQuick,
                                    allergens: ["Gluten", "Dairy"], favourite: true)
         var doubleB = Product(name: "Double Bolt", price: Money(15.90), categoryID: burgers.id,
                               station: "Grill", glyph: "flame.circle.fill", accent: 0,
                               groups: [bun, cook, sauce, addOns, remove],
+                              quickActions: burgerQuick,
                               allergens: ["Gluten", "Dairy"], favourite: true)
         var chickenB = Product(name: "Crispy Chicken", price: Money(13.90), categoryID: chicken.id,
                                station: "Fryer", glyph: "bird.fill", accent: 1,
-                               groups: [bun, sauce, addOns, remove], allergens: ["Gluten"], favourite: true)
-        let veg = Product(name: "Garden Burger", price: Money(13.50), categoryID: burgers.id,
+                               groups: [bun, sauce, addOns, remove],
+                               quickActions: burgerQuick,
+                               allergens: ["Gluten"], favourite: true)
+        var veg = Product(name: "Garden Burger", price: Money(13.50), categoryID: burgers.id,
                           station: "Grill", glyph: "leaf.fill", accent: 4,
-                          groups: [bun, sauce, addOns, remove], allergens: ["Gluten"])
+                          groups: [bun, sauce, addOns, remove],
+                          quickActions: burgerQuick, allergens: ["Gluten"])
         let wings = Product(name: "Wings 6pc", price: Money(12.50), categoryID: chicken.id,
                             station: "Fryer", glyph: "flame", accent: 1,
                             groups: [Seed.group("Toss", .single, min: 1, max: 1, [
@@ -96,7 +105,7 @@ enum QSRSeed {
                              station: "Drinks", glyph: "circle.fill", accent: 1)
 
         // The meal: a main slot, a side slot and a drink slot, with upgrade prices on the swaps.
-        let mealCombo = Combo(name: "Make it a meal", kind: .meal,
+        let mealCombo = Combo(name: "Bolt Meal", kind: .meal,
                               slots: [
                                 ComboSlot(name: "Burger",
                                           productIDs: [cheeseburger.id, doubleB.id, chickenB.id, veg.id],
@@ -118,7 +127,7 @@ enum QSRSeed {
         cheeseburger.upsellComboIDs = [mealCombo.id]
         doubleB.upsellComboIDs = [mealCombo.id]
         chickenB.upsellComboIDs = [mealCombo.id]
-        cheeseburger.upsellModifierNames = ["Bacon", "Cheese slice"]
+        veg.upsellComboIDs = [mealCombo.id]
 
         let comboTile = Product(name: "Bolt Meal", price: Money(18.90), categoryID: burgers.id,
                                 station: "Expo", glyph: "square.stack.3d.up.fill", accent: 8,
