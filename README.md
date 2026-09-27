@@ -39,8 +39,8 @@ Tap the venue chip at top left, or press ⌘K. Each row in the palette says what
 | Mode | Venue | What actually changes |
 |---|---|---|
 | Café | Prospect & Grind | Seven-axis coffee sheet, names on cups, a make queue, recents |
-| QSR | Bolt Burger | Combos with swap prices, upsell strip, token numbers, four kitchen stations |
-| Bar | The Lantern | Dark, dense, tabs, rounds with Repeat, card holds, a tap adds without a sheet |
+| QSR | Bolt Burger | Meals built in place from the line, swap prices, token numbers, four kitchen stations |
+| Bar | The Lantern | Dark, dense, tabs, rounds, premium spirit swaps, a lock screen between sales |
 | Pub bistro | The Royal Exchange | Typed table numbers, buzzers, drinks poured now while food goes to the kitchen, member pricing |
 | Full service | Marlowe | Floor plan first, covers, courses with hold and fire, split bills, service charge |
 | Fine dining | Aster | Seats, pacing with call and uncall, allergens by seat, wine routed to the cellar |
@@ -51,11 +51,17 @@ Tap the venue chip at top left, or press ⌘K. Each row in the palette says what
 
 The venue chip menu has a "What to try" item for whichever venue is open. In short:
 
-- **Café.** Tap Latte. Size, milk, strength, temperature, sugar, syrup and cup are on one
-  sheet with a running price. Add it, tap a name from the row above the tenders, tap Card.
-  Then look at Just made: one tap rebuilds that exact drink.
-- **Bar.** Type 4 on the keypad and tap Pale Ale: one line of four, no sheet. The cart groups
-  it as Round 1 with a Repeat control. Go to Tabs and use Same again on any tab.
+- **Café.** Tap a Bacon & Egg Roll. It goes straight on the order, because the sauce has a
+  default and nothing is unanswerable. The composer under the grid offers the five changes a
+  counter actually hears. Then tap Latte and use More for the full seven-axis sheet.
+- **QSR.** Tap Bolt Cheeseburger, then "Make it a meal" on the composer. The line becomes a
+  meal in place, keeping any changes already made to the burger. Then "Swap drink", "Large
+  fries", "No pickles" — each one tap, nothing reopened. Switch the cart to Bundle to see it
+  as bags to pack.
+- **Bar.** Tap Espresso Martini, then Grey Goose or Belvedere on the composer: the house pour
+  is swapped out, the line reprices and the docket says which spirit. Type 4 on the keypad
+  and tap Pale Ale for a round of four with no sheet. Pay a tab in cash and watch the till
+  show the change and hand itself back to the lock screen.
 - **Full service.** The floor is the home screen. Table 4 has its mains held: open it and tap
   Fire on the Mains header. Table 2 asked for the bill: Split, Equal, 3, then re-split what
   is left when the guests change their minds.
@@ -66,7 +72,7 @@ The venue chip menu has a "What to try" item for whichever venue is open. In sho
   make a card decline, make an order arrive, or have another till take the order you are on.
 
 Keyboard: ⌘K business type · ⌘S send · ⌘P pay · ⌘D split · ⌘N new order · ⌘Z undo ·
-⌘. presenter · ⌘1…8 surfaces · Esc close.
+⌘. presenter · ⌘L lock · ⌘1…8 surfaces · Esc close.
 
 To open the app directly on a particular moment, pass a demo script:
 
@@ -74,10 +80,12 @@ To open the app directly on a particular moment, pass a demo script:
 xcrun simctl launch "iPad Pro 13-inch (M5)" com.oolio.rams --demo fs-split
 ```
 
-Scripts include `cafe-configure`, `cafe-cart`, `cafe-queue`, `qsr-combo`, `qsr-kitchen`,
-`bar-tabs`, `bar-round-build`, `bar-age`, `pub-cart`, `fs-floor`, `fs-split`, `fs-split-items`,
-`fd-courses`, `pizza-half`, `pizza-half-built`, `takeaway-inbox`, `printer-down`, `lock`,
-`approval`, `modes`, `help`. They are listed in `Rams/Store/Store+Demo.swift`.
+Scripts include `cafe-roll`, `cafe-configure`, `cafe-cart`, `cafe-queue`, `qsr-compose`,
+`qsr-meal`, `qsr-bundle`, `qsr-combo`, `qsr-kitchen`, `bar-premium`, `bar-tabs`,
+`bar-round-build`, `bar-paid`, `lock-screen`, `bar-age`, `pub-cart`, `fs-floor`, `fs-split`,
+`fs-split-items`, `fd-courses`, `fd-seats`, `pizza-half`, `pizza-half-built`,
+`takeaway-inbox`, `printer-down`, `lock`, `approval`, `modes`, `help`. They are listed in
+`Rams/Store/Store+Demo.swift`.
 
 ## Screens
 
@@ -97,10 +105,22 @@ Scripts include `cafe-configure`, `cafe-cart`, `cafe-queue`, `qsr-combo`, `qsr-k
 | Four stations, allergens, rush, and bump meaning Ready | Three aggregators, prep time, and Accept all |
 | ![Business type](screenshots/14-business-type.png) | ![Lock](screenshots/15-order-lock.png) |
 | The switcher: one chip, ⌘K, and it says what changes | Another till is paying. You can still add and send. |
+| ![Composer](screenshots/17-composer-cafe.png) | ![Meal](screenshots/18-composer-meal.png) |
+| A roll goes on in one tap; the composer holds the changes a counter hears | The burger became a meal in place, and the slots are now the conversation |
+| ![Premium](screenshots/19-premium-swap.png) | ![Bundle](screenshots/20-cart-bundle.png) |
+| The house pour swapped for a premium vodka, repriced, on the docket | The same order as bags to pack |
+| ![Lock screen](screenshots/22-lock-screen.png) | ![Sale complete](screenshots/23-sale-complete.png) |
+| Three access tiers. Operators tap in, supervisors and managers use a PIN | The change, then the till hands itself back |
 
 ## The mental model
 
 Five ideas hold the whole interface together.
+
+**A tap adds. The line is the editor.** The till only stops to ask when the kitchen genuinely
+cannot proceed without an answer: a steak has to be cooked to something. Everything with a
+sensible default goes straight on the order, and the guest's changes land on the line
+afterwards, which is when they actually arrive. Selecting a line raises a composer of one-tap
+changes — make it a meal, swap the gin, no pickles — applied in place.
 
 **One working surface, and the order opens over it.** A waiter reads the floor, taps a table
 and the order appears beside it. The floor never goes away. The same is true of the tabs list
@@ -118,6 +138,12 @@ the button changing to "Sending 4".
 
 **Approval comes to the operator.** A manager taps a PIN on the operator's own device, picks a
 reason, and the action is audited against them. Nobody is logged out and nobody walks anywhere.
+
+**Every sale belongs to somebody.** A shared till returns to a lock screen of role tiles when
+a sale ends, after a few seconds showing the change due. Operators tap their tile and are in;
+supervisors and managers confirm with a PIN, because their tile carries voids, refunds and the
+drawer. It is a device setting, since the research is clear that forcing it at peak in a
+nightclub would be fatal.
 
 **Offline is a mode, not an error.** Cash, accounts and manual card records keep trading. Sends
 queue with the reason visible on the line. The order is never the thing that is lost.

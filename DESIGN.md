@@ -25,6 +25,66 @@ Every one of those is answered by something visible, not by memory:
 | What needs attention | The table's attention badge names its cause; the cart banner names a failed docket |
 | What should I do next | Send and Pay are the two largest targets and are always in the same place |
 
+## When to ask, and when to just add
+
+The first version of this prototype asked every question up front, and it was too clicky. A
+bacon and egg roll opened a sheet to confirm a sauce that has a default nobody changes four
+times out of five.
+
+The rule now is narrow, and it is the same rule everywhere:
+
+> **Force only what cannot be made without an answer.**
+
+Three policies, set per modifier group when the menu is authored:
+
+| Policy | Meaning | Where it shows |
+|---|---|---|
+| **Forced** | No safe default exists. A steak cannot be cooked to "whatever". | Stops the sale and opens the sheet |
+| **Offered** | Has a default, changed often. | One-tap chip on the line composer |
+| **Quiet** | Has a default, changed rarely: glassware, garnish, base sauce. | The full sheet only |
+
+A group whose minimum is already satisfied by its default is not a forced choice, however the
+menu declares it. That single derivation removed most of the sheets in the product.
+
+What still stops and asks: a pub steak's cooking temperature, a half-and-half pizza's sections,
+a combo that has to be built from scratch, and an age-restricted sale.
+
+## The composer
+
+The guest does not speak in forms. They speak in changes, and the changes arrive after the
+thing is already on the order:
+
+> "Cheeseburger." · "Make it a meal." · "Large fries." · "No pickles." · "Actually a shake."
+
+Selecting a cart line raises a bar under the product grid carrying that line's most common
+changes, in the order that venue makes them. Every one is a single tap, applied in place. The
+burger becomes a meal without being removed and re-added, and the "no pickles" said before the
+meal was mentioned survives it. **More** opens the full sheet for the long tail.
+
+Three kinds of chip:
+
+- **Offer**, in green: the change worth the most, which is almost always the meal.
+- **Swap**, in the venue's accent: replaces rather than adds. A premium spirit swaps out the
+  house pour, reprices the line, and puts the brand on the docket. This is the single most
+  valuable change a bartender makes and it is worth more than every modifier combined.
+- **Neutral**: additions and removals, showing their price when they have one.
+
+Each venue authors its own list, so the chips on a burger are the five things a Bolt cashier
+actually hears, not the first five options in the menu.
+
+## The cart pivots
+
+The same order reads differently depending on what the operator is about to do with it, so the
+cart header carries a pivot. Which pivots appear is per venue.
+
+| Pivot | Reads as | Where it is the default |
+|---|---|---|
+| Course | Paced by the floor | Full service, fine dining, pub bistro |
+| Seat | Who is having what | Fine dining, and any venue about to split by seat |
+| Round | What was poured together | Bar |
+| Bundle | Meals as bags, extras after | QSR |
+| As rung | The order it was taken in | Café, pizza, takeaway |
+
 ## Information architecture
 
 **Surfaces, not screens.** Eight surfaces exist; each venue exposes only the ones it runs. A
@@ -81,10 +141,12 @@ the only indicator of state.
 
 Taken from the research's wet-hands and one-handed sections, and applied throughout.
 
-1. **No long press is the only route to anything.** Long press adds with defaults; the same
-   thing is on the tile as a control and in the line's menu.
-2. **No swipe is the only route.** Swipe to remove exists; so does the minus, and so does the
-   menu.
+1. **Swipe on lists, never on the grid.** A cart line is a list row, and lists are swiped
+   everywhere, so pulling one aside reveals quantity, rush, note and remove, with a long pull
+   committing the first action rather than demanding an aim. The product grid is a scanning
+   surface and a swipe there would be finicky and ambiguous, so there is none.
+2. **No swipe and no long press is the only route.** Every swipe action is also in the line's
+   menu; long press adds with defaults and the same thing is a visible control on the tile.
 3. **No double tap anywhere, ever.**
 4. **Repeat protection.** A second tap on a primary action inside 300 ms is treated as one
    contact from a wet finger and ignored.

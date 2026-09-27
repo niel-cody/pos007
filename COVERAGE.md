@@ -26,7 +26,12 @@ figures are the research's targets. The built column is what this app costs toda
 | W12.02 Accept an online order | 5 | 1 | **1** | 3 | **0** |
 | W12.06 Mark ready and hand over | 5 | 2 | **2** | 3 | **0** |
 | W02.14 Half-and-half pizza with a topping on one side | — | — | **6** | — | **1** |
-| W02.12 Make it a meal from a burger | — | — | **2** | — | **1** |
+| W02.12 Make it a meal from a burger already on the order | — | — | **2** | — | **0** |
+| W01.02 Bacon and egg roll, as it comes | 3 | — | **1** | 1 | **0** |
+| W01.02 The same roll with chilli jam and extra bacon | 5 | — | **3** | 1 | **0** |
+| W06.13 Espresso martini swapped to a premium vodka | — | — | **2** | — | **0** |
+| W14.03 Log in from the lock screen, operator | 4 | 1 | **1** | 1 | **1** |
+| W14.01 Log in from the lock screen, supervisor with a PIN | 6 | 5 | **5** | 2 | **1** |
 
 Where the built figure is above the target, the reason is stated rather than hidden. The equal
 split costs one tap more than the target because choosing the basis and the count are two
@@ -39,7 +44,7 @@ figure assumed one product.
 | Family | Demonstrated |
 |---|---|
 | W01 Sale basics | Add, quantity, keypad prefix, repeat, remove with undo, void with a reason, notes, order name with disambiguation, park and recall, open price, sold out at add and in the cart, recents and favourites, the make queue, the order lock |
-| W02 Product configuration | One-sheet configuration, required and optional groups, minimum and maximum, defaults kept and removed, modifier quantities, priced modifiers, variants, preparation options, allergens, pinned modifiers and search, combos, half-and-half sections, editing in the cart, the whole café matrix |
+| W02 Product configuration | An ask policy that forces only what has no safe default, a line composer for everything else, in-place meal building and slot swaps, premium spirit swaps, one-sheet configuration, required and optional groups, minimum and maximum, defaults kept and removed, modifier quantities, priced modifiers, variants, preparation options, allergens, pinned modifiers and search, combos, half-and-half sections, editing in the cart, the whole café matrix |
 | W03 Order types | Type per venue with defaults, dine in with and without a floor, typed table numbers, buzzers, takeaway, pickup with a time, delivery with address, zone and fee, drive-through as its own type, changing type mid-order, name and token identifiers, duplicate names |
 | W04 Tables and floor | Sixteen derived states with words and glyphs, the legend as a filter, covers, waiter assignment, notes, multi-order tables, move, merge, split, reset, block, attention badges with named causes, section stats, the lock and its override |
 | W05 Courses, seats, kitchen send | Send per course, station routing, hold and fire, call and uncall, re-fire as a rush, seats on items, drinks now and food to the kitchen, ready and served as separate acts, sent state derived from station confirmation |
@@ -51,7 +56,7 @@ figure assumed one product.
 | W11 Kitchen and printing | Station routing, dockets with modifiers, removals, allergens, notes and seats, section blocks for a half-and-half, course calls, void dockets, additions, rush, start, bump and recall, printer offline with the reason on the line, reprint and redirect |
 | W12 Online, takeaway, delivery | The inbox as a home surface, accept, accept all, reject with a reason, prepaid and pay at venue, scheduled orders, prep time, channel pausing, ready, call, handover to a guest or a driver, failed delivery with a resolution |
 | W13 Customers and loyalty | Search by name, phone or member number, attach and detach, duplicate detection on create, the usual order in one tap, loyalty points and redemption, member pricing, allergy and VIP flags, house accounts |
-| W14 Staff and permissions | Roles with permission sets, permission-gated actions, approval on the operator's device with a reason, the operator staying logged in, and the audit line naming the approver |
+| W14 Staff and permissions | Roles with permission sets and three access tiers on the lock screen, tap-to-log-in for operators and a PIN for supervisors and above, a post-sale grace period that hands a shared till back, permission-gated actions, approval on the operator's device with a reason, the operator staying logged in, and the audit line naming the approver |
 | W15 Shifts and cash | Float, cash and card sales, paid in and out, drops, expected drawer, count and close with a variance the till explains, drawer open with a reason, shift report |
 | W17 Degraded operation | Offline as a mode, tenders that need a third party refused with a local alternative, unsynced counts, station offline with the reason on the line, redirect and reprint |
 | W18 Concurrency | The lock on payment, transfer, merge and whole-order void only; reading and item editing never blocked; the banner naming the holder and the time it frees itself; the override with an audit line; the pending-card-leg warning |

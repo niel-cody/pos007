@@ -164,11 +164,14 @@ struct OrderItem: Identifiable, Hashable, Codable {
         return parts.joined(separator: " · ")
     }
 
-    /// Only what changes the make reaches a queue card. (W01.26 step 3)
+    /// Only what changes the make reaches a queue card, and only where it differs from the
+    /// standard build. A card that lists everything is a card nobody reads. (W01.26 step 3)
     var makeSummary: String {
         var parts: [String] = []
         if let v = variantLabel { parts.append(v) }
-        parts.append(contentsOf: modifiers.filter(\.changesTheMake).map(\.label))
+        parts.append(contentsOf: modifiers
+            .filter { $0.changesTheMake && (!$0.wasDefault || $0.isRemoval) }
+            .map(\.label))
         return parts.joined(separator: ", ")
     }
 }

@@ -15,14 +15,16 @@ struct LockScreen: View {
             theme.canvas.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                header
-                Spacer(minLength: 0)
-                if let staff = pinFor {
-                    pinPanel(staff)
-                } else {
-                    tiles
+                Spacer(minLength: 24)
+                VStack(spacing: 34) {
+                    header
+                    if let staff = pinFor {
+                        pinPanel(staff)
+                    } else {
+                        tiles
+                    }
                 }
-                Spacer(minLength: 0)
+                Spacer(minLength: 24)
                 footer
             }
         }
@@ -50,7 +52,6 @@ struct LockScreen: View {
                 Chip(text: reason, glyph: "lock.fill", tint: theme.inkSecondary)
             }
         }
-        .padding(.top, 48)
     }
 
     private var tiles: some View {
